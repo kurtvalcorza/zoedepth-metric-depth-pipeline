@@ -117,7 +117,7 @@ they are measurements for the stated runtime, not general estimates.
 
 | Date (UTC) | Commit / notebook blob | Executor | Path exercised | Wall | Outcome |
 |---|---|---|---|---|---|
-__LOCAL_ROW__
+| 2026-09-14 | notebook blob `8a428bfbd013` (commit `3f2230e`, generated at `7e5c4f8`; `NOTEBOOK_SOURCE.repository_revision` = `7e5c4f8…`) | Local Windows-venv harness (`run_nb_local.py`: nbclient 0.11.0, fresh `python3` kernel, `CUDA_VISIBLE_DEVICES=-1`, `DIMER_NOTEBOOK_CI_PREINSTALLED=1`), Python 3.12.10, torch 2.14.0+cu130, transformers 4.57.6 | Default synthetic path, all 8 code cells: pinned install skipped (pre-installed), `stage_missing_files` fetched all 4 manifest entries (1.38 GB) from the Hub cache at the pinned revision into the scratch `weights/`, `verify_snapshot` PASS (4 files), no further download in the log, one `predict` call (1.71 s, no flip) → 1.590 / 1.818 / 1.904 m (min / median / max), probes near box 1.688 m, far cabinet 1.873 m, floor 1.678 m, wall top 1.861 m (near < far, identical to the smoke run), `evaluation_report` `not-measurable` (no reference, by design), room digest `6fb234ca…`, 5 outputs written (JSON ×3, `.npy`, preview PNG) | 133.2 s | PASS — pre-flight only; not promotion evidence |
 
 ### Manual clean-runtime evidence
 
