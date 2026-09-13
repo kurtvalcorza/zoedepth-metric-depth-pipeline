@@ -1,0 +1,10 @@
+# Weight provenance and DIMER hosting
+
+- Upstream: `Intel/zoedepth-nyu-kitti`
+- Immutable revision: `f364d4c7936e91f465abba182208dd68142bf0ca` (the Hub's `main` resolved to this commit on 2026-09-14)
+- Weight format: SafeTensors (`model.safetensors`, 1,380,374,404 bytes, float32). The upstream repository hosts no `pytorch_model.bin` at this revision — SafeTensors is the only weight file.
+- Manifest: `weights/zoedepth-nyu-kitti/dimer-base-manifest.json` (4 files: `README.md`, `config.json`, `model.safetensors`, `preprocessor_config.json`; 1,380,379,860 bytes total, per-file SHA-256)
+- Upstream weight license: MIT (the checkpoint's `README.md` front matter and the Hub's licence tag; the upstream code repository `isl-org/ZoeDepth` is MIT as well)
+- DIMER hosting: MIT permits use, modification, distribution, and commercial use subject to preservation of the copyright notice and permission notice. The Git repository does not vendor the checkpoint (`weights/**/*.safetensors` is git-ignored); DIMER may mirror the pinned snapshot in its model store under the upstream license.
+- Fresh clone: `stage_missing_files(allow_download=True)` fetches only the manifest-listed files absent on disk, at the pinned revision, into the snapshot directory; `verify_snapshot()` then checks every file before any load. `weights/**` is marked `-text` in `.gitattributes` so Windows `core.autocrlf` cannot rewrite the committed small files and break their digests.
+- Loader trust boundary: Transformers `ZoeDepthForDepthEstimation` / `ZoeDepthImageProcessor` (resize to fit 384×512 keeping the aspect ratio with sides rounded to multiples of 32, padding, mean/std 0.5) with `trust_remote_code=False`, `local_files_only=True` from the verified directory; `config.json` declares `use_pretrained_backbone: false`, so the BEiT-large backbone comes from the same SafeTensors file and nothing is fetched at construction or inference (the smoke run loaded and predicted with `HF_HUB_OFFLINE=1`). The prediction is mapped back to the input size by the pinned processor's `post_process_depth_estimation`, which also handles the optional flipped pass.
