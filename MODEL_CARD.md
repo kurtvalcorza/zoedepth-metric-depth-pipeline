@@ -2,6 +2,7 @@
 license: mit
 model_card_spec: "1.1"
 pipeline_tag: depth-estimation
+task: "Depth Estimation - Metric"
 base_model: Intel/zoedepth-nyu-kitti
 date_published: "2024-04-30"
 date_published_source: "Hugging Face Hub repository creation date of the exact hosted checkpoint (`createdAt` 2024-04-30T20:22:35Z, https://huggingface.co/api/models/Intel/zoedepth-nyu-kitti — the Transformers-format conversion); the ZoeDepth paper and original checkpoints are from 2023-02 (arXiv:2302.12288), and the pinned revision is the Hub's `main` as of 2026-09-14"
