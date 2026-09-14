@@ -7,7 +7,7 @@ date_published: "2024-04-30"
 date_published_source: "Hugging Face Hub repository creation date of the exact hosted checkpoint (`createdAt` 2024-04-30T20:22:35Z, https://huggingface.co/api/models/Intel/zoedepth-nyu-kitti — the Transformers-format conversion); the ZoeDepth paper and original checkpoints are from 2023-02 (arXiv:2302.12288), and the pinned revision is the Hub's `main` as of 2026-09-14"
 ---
 
-# ZoeDepth NYU+KITTI (DIMER package v0.1.0) — Monocular Metric Depth Estimation (Inference)
+# ZoeDepth NYU+KITTI — Monocular Metric Depth Estimation (Inference)
 
 [![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Intel%2Fzoedepth--nyu--kitti-ffcc4d?style=flat)](https://huggingface.co/Intel/zoedepth-nyu-kitti)
 [![Upstream GitHub](https://img.shields.io/badge/Upstream%20GitHub-isl--org%2FZoeDepth-181717?style=flat&logo=github&logoColor=white)](https://github.com/isl-org/ZoeDepth)
