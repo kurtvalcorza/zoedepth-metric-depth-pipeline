@@ -1,4 +1,4 @@
-"""DIMER inference package for the pinned ``Intel/zoedepth-nyu-kitti`` checkpoint."""
+"""DIMER inference and bounded-adaptation package for the pinned ZoeDepth checkpoint."""
 
 from .pipeline import (
     DEFAULT_WEIGHTS_DIR,
@@ -20,6 +20,7 @@ from .pipeline import (
     delta1,
     evaluation_report,
     stage_missing_files,
+    validate_depth_dataset,
     validate_image,
     validate_inputs,
     verify_snapshot,
@@ -45,6 +46,7 @@ __all__ = [
     "delta1",
     "evaluation_report",
     "stage_missing_files",
+    "validate_depth_dataset",
     "validate_image",
     "validate_inputs",
     "verify_snapshot",
