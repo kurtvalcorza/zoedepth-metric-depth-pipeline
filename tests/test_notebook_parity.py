@@ -76,6 +76,7 @@ def test_par1_rewrite_rules_are_the_only_difference() -> None:
 def test_byod_archive_limit_allows_the_public_record_ceiling() -> None:
     source = "\n".join(cell.get("code", "") for cell in TEMPLATE["cells"])
     assert "max_archive_entries = 2 * MAX_ADAPTATION_RECORDS + 2" in source
+    assert "total_image_pixels > MAX_ADAPTATION_PIXELS" in source
     assert "f'fixed {{dataset_kind}} held-out split'" in source
 
 

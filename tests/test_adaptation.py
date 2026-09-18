@@ -163,6 +163,18 @@ def test_dataset_validation_bounds_total_pixels(monkeypatch):
         validate_depth_dataset(_records()[:2])
 
 
+def test_finetune_applies_record_and_pixel_limits_across_both_splits(monkeypatch):
+    records = _records()
+    monkeypatch.setattr(pipeline_module, "MAX_ADAPTATION_RECORDS", 3)
+    with pytest.raises(ValueError, match="combined train and validation record count"):
+        _pipeline().finetune(records[:2], records[2:], epochs=1)
+
+    monkeypatch.setattr(pipeline_module, "MAX_ADAPTATION_RECORDS", 128)
+    monkeypatch.setattr(pipeline_module, "MAX_ADAPTATION_PIXELS", 4_000)
+    with pytest.raises(ValueError, match="combined train and validation data"):
+        _pipeline().finetune(records[:2], records[2:], epochs=1)
+
+
 def test_evaluation_weights_metrics_by_valid_pixels():
     small = {
         "id": "small",

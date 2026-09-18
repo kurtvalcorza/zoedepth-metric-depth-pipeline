@@ -556,6 +556,22 @@ class ZoeDepthMetricPipeline:
             raise ValueError("learning_rate must be in (0, 1e-2]")
         train_manifest = validate_depth_dataset(train_records)
         val_manifest = validate_depth_dataset(val_records) if val_records else None
+        total_records = train_manifest["records"] + (
+            val_manifest["records"] if val_manifest is not None else 0
+        )
+        if total_records > MAX_ADAPTATION_RECORDS:
+            raise ValueError(
+                f"combined train and validation record count {total_records} exceeds "
+                f"MAX_ADAPTATION_RECORDS {MAX_ADAPTATION_RECORDS}"
+            )
+        total_pixels = train_manifest["valid_depth_pixels"] + (
+            val_manifest["valid_depth_pixels"] if val_manifest is not None else 0
+        )
+        if total_pixels > MAX_ADAPTATION_PIXELS:
+            raise ValueError(
+                f"combined train and validation data has {total_pixels} pixels, exceeding "
+                f"MAX_ADAPTATION_PIXELS {MAX_ADAPTATION_PIXELS}"
+            )
         if val_records:
             train_ids = {str(record["id"]) for record in train_records}
             val_ids = {str(record["id"]) for record in val_records}
