@@ -1,0 +1,133 @@
+{
+  "dataset": {
+    "kind": "generated",
+    "train": {
+      "records": 18,
+      "unique_ids": 18,
+      "valid_depth_pixels": 221184,
+      "depth_min_m": 0.8117600083351135,
+      "depth_max_m": 4.2755045890808105,
+      "depth_median_m": 2.298952102661133,
+      "dataset_sha256": "f3d238a9a844980b9417e81cb4f5133418bb351b111988b2e3c750f2fe6b16ac",
+      "verdict": "accepted"
+    },
+    "validation": {
+      "records": 6,
+      "unique_ids": 6,
+      "valid_depth_pixels": 73728,
+      "depth_min_m": 0.7304480671882629,
+      "depth_max_m": 4.37999963760376,
+      "depth_median_m": 2.1335408687591553,
+      "dataset_sha256": "8786008a16072722abc9f7ba4e6fd32cc87796d17d896aef312552585f5273ac",
+      "verdict": "accepted"
+    },
+    "overlap_ids": []
+  },
+  "adaptation": {
+    "method": "frozen-backbone-metric-head-gradient-adaptation",
+    "trainable_prefixes": [
+      "metric_head."
+    ],
+    "trainable_parameters": 1761754,
+    "frozen_parameters": 343311553,
+    "epochs": 2,
+    "learning_rate": 1e-05,
+    "batch_size": 1,
+    "seed": 42,
+    "loss": "mean-absolute-log-depth-error",
+    "train_manifest": {
+      "records": 18,
+      "unique_ids": 18,
+      "valid_depth_pixels": 221184,
+      "depth_min_m": 0.8117600083351135,
+      "depth_max_m": 4.2755045890808105,
+      "depth_median_m": 2.298952102661133,
+      "dataset_sha256": "f3d238a9a844980b9417e81cb4f5133418bb351b111988b2e3c750f2fe6b16ac",
+      "verdict": "accepted"
+    },
+    "validation_manifest": {
+      "records": 6,
+      "unique_ids": 6,
+      "valid_depth_pixels": 73728,
+      "depth_min_m": 0.7304480671882629,
+      "depth_max_m": 4.37999963760376,
+      "depth_median_m": 2.1335408687591553,
+      "dataset_sha256": "8786008a16072722abc9f7ba4e6fd32cc87796d17d896aef312552585f5273ac",
+      "verdict": "accepted"
+    },
+    "training_median_depth_m": 2.298952102661133,
+    "baseline_validation_log_l1": 0.43331079185009,
+    "history": [
+      {
+        "epoch": 1,
+        "train_log_l1": 0.422784,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.428735
+      },
+      {
+        "epoch": 2,
+        "train_log_l1": 0.418089,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.425855
+      }
+    ],
+    "weight_delta_l2": 0.09880048824010805
+  },
+  "evaluation": {
+    "task": "monocular-metric-depth-adaptation",
+    "verdict": "sample-sanity",
+    "estimation": "fixed generated held-out split",
+    "baseline_pretrained": {
+      "records": 6,
+      "abs_rel": 0.43109577191824416,
+      "delta1": 0.21122233072916666,
+      "constant_median_baseline_abs_rel": 0.4526053922821105,
+      "constant_median_baseline_delta1": 0.25775824652777773
+    },
+    "adapted": {
+      "records": 6,
+      "abs_rel": 0.4662034112995412,
+      "delta1": 0.21200900607638887,
+      "constant_median_baseline_abs_rel": 0.4526053922821105,
+      "constant_median_baseline_delta1": 0.25775824652777773,
+      "abs_rel_delta_vs_baseline": 0.013598019017430685,
+      "delta1_delta_vs_baseline": -0.04574924045138887
+    },
+    "weight_delta_l2": 0.09880048824010805
+  },
+  "unseen": {
+    "id": "generated-depth-24",
+    "abs_rel": 0.43371197832346153,
+    "delta1": 0.21500651041666666,
+    "depth_file": "outputs/zoedepth_metric_depth_unseen_depth.npy"
+  },
+  "artifact": {
+    "verification": "PASSED",
+    "rtol": 1e-05,
+    "atol": 1e-05,
+    "max_abs_diff": 0.0,
+    "artifact_dir": "outputs/zoedepth-metric-head-adapter-v1"
+  },
+  "notebook_source": {
+    "repository": "zoedepth-metric-depth-pipeline",
+    "repository_revision": "e59149e41f93db06d7b67687be293d14ad0b9994",
+    "embedded_module": "src/zoedepth_metric_depth_pipeline/pipeline.py",
+    "embedded_modules": [
+      "src/zoedepth_metric_depth_pipeline/pipeline.py"
+    ],
+    "module_sha256": "f56da93b5af18cfe3388b5c1ca334302fdad0ffdb62cfef56c52e926fe78f68f",
+    "generator": "build_notebook.py/2",
+    "notebook_spec": "2.0"
+  },
+  "repository_revision": "e59149e41f93db06d7b67687be293d14ad0b9994",
+  "base_model": {
+    "id": "Intel/zoedepth-nyu-kitti",
+    "revision": "f364d4c7936e91f465abba182208dd68142bf0ca"
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "torch": "2.14.0+cu130",
+    "transformers": "4.57.6",
+    "device": "cuda:0"
+  }
+}
