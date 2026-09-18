@@ -1,0 +1,24 @@
+{
+  "task": "monocular-metric-depth-adaptation",
+  "verdict": "sample-sanity",
+  "estimation": "fixed generated held-out split",
+  "baseline_pretrained": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.4310957719182442,
+    "delta1": 0.21122233072916666,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778
+  },
+  "adapted": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.4662034022962273,
+    "delta1": 0.2120090060763889,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778,
+    "abs_rel_delta_vs_baseline": 0.013598010014116757,
+    "delta1_delta_vs_baseline": -0.045749240451388895
+  },
+  "weight_delta_l2": 0.09880053560267807
+}

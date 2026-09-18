@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "zoedepth_metric_depth_pipeline"
 REPO_NAME = "zoedepth-metric-depth-pipeline"
 NOTEBOOK_NAME = "zoedepth_metric_depth_colab.ipynb"
-EXPECTED_PROFILE = "TASK-INFERENCE"
+EXPECTED_PROFILE = "E2E"
 EXPECTED_MODEL_ID = "Intel/zoedepth-nyu-kitti"
 PIPELINE_CLASS = "ZoeDepthMetricPipeline"
 # Extra 40-hex commits the docs may legitimately cite (none yet).
@@ -33,43 +33,40 @@ KNOWN_SHAS: frozenset[str] = frozenset(())
 BYOD_GATES = ("USE_BYOD",)
 
 EXPECTED_OUTPUTS = (
-    "outputs/zoedepth_metric_depth_input_manifest.json",
+    "outputs/zoedepth_metric_depth_dataset_manifest.json",
     "outputs/zoedepth_metric_depth_evaluation_report.json",
     "outputs/zoedepth_metric_depth_result.json",
-    "outputs/zoedepth_metric_depth_depth.npy",
-    "outputs/zoedepth_metric_depth_preview.png",
+    "outputs/zoedepth_metric_depth_unseen_depth.npy",
+    "outputs/zoedepth-metric-head-adapter-v1",
 )
 
 CODE_MARKERS = (
-    "input_manifest = validate_inputs(image, flip_augmentation=flip_augmentation, names=[image_name])",
-    "validate_inputs(Image.new('RGB', (2000, 400)))",
-    "result = pipe.predict(image, flip_augmentation=flip_augmentation)",
-    "report = evaluation_report(result, reference_depth, sample_kind=sample_kind)",
-    "print({'ceilings': {'MIN_IMAGE_SIDE': MIN_IMAGE_SIDE, 'MAX_IMAGE_SIDE': MAX_IMAGE_SIDE, 'MAX_ASPECT_RATIO': MAX_ASPECT_RATIO, 'DEPTH_KIND': DEPTH_KIND, 'DEPTH_UNIT': DEPTH_UNIT, 'DEPTH_RANGES_M': DEPTH_RANGES_M, 'FLIP_AUGMENTATION': FLIP_AUGMENTATION, 'DELTA_THRESHOLD': DELTA_THRESHOLD}})",
-    "flip_augmentation = False",
-    "def synthetic_room(width=640, height=480):",
-    "image, probes = synthetic_room()",
-    "reference_depth = None",
-    "hashlib.sha256(np.asarray(image.convert('RGB')).tobytes()).hexdigest()",
-    "result['depth_unit']",
-    "np.save('outputs/zoedepth_metric_depth_depth.npy', depth)",
-    "preview.save('outputs/zoedepth_metric_depth_preview.png')",
-    "'model_revision': MODEL_REVISION",
-    "'model_license': MODEL_LICENSE",
+    "train_manifest = validate_depth_dataset(train_records)",
+    "val_manifest = validate_depth_dataset(val_records)",
+    "if short_side < MIN_IMAGE_SIDE or long_side > MAX_IMAGE_SIDE",
+    "base_eval = score_records(pipe, val_records, training_median)",
+    "model_abs_sum / valid_pixels",
+    "parameter_counts = pipe.freeze_for_adaptation()",
+    "history = pipe.finetune(train_records, val_records, epochs=2, learning_rate=1e-5, seed=42)",
+    "target = _prepare_depth_target(",
+    "adapted_eval = pipe.evaluate_adaptation(val_records)",
+    "unseen = generated_depth_records(start=24, count=1)[0]",
+    "unseen_result = pipe.predict(unseen['image'])",
+    "artifact_dir = pipe.save_artifact(",
+    "reloaded_pipe = ZoeDepthMetricPipeline.from_artifact(",
+    "np.allclose(unseen_result['depth'], reloaded_result['depth']",
+    "pipe.adaptation_config['weight_delta_l2']",
     "transformers.__version__",
     "'device': pipe.device",
 )
 
 MARKDOWN_MARKERS = (
-    "**Capability:** monocular metric depth estimation",
-    "**No adaptation occurs:**",
-    "Flip augmentation is a **caller-owned request parameter**",
-    "**The metres are an estimate, not a measurement**",
-    "metric depth needs a reference depth map in metres",
-    "the verdict is `not-measurable`",
-    "`sample-sanity`",
-    "**A smooth depth map is not a correct one**",
-    "Relative or affine-invariant depth (this checkpoint claims metres",
+    "bounded metric-head gradient adaptation",
+    "Only `metric_head.*` is trainable",
+    "constant training-median baseline",
+    "SafeTensors",
+    "fresh reload",
+    "sample-sanity",
 )
 
 # Runtime/model-library access must stay inside the carried module (ST1/ST2).
@@ -293,6 +290,10 @@ def validate_model_card() -> None:
         positions.append(matches[0])
     _check(positions == sorted(positions), "required model-card headings are out of order")
     _check("## Immutable provenance" in text, "MODEL_CARD.md must carry an '## Immutable provenance' section")
+    _check(
+        "evaluate_adaptation(records)" in text and "baseline_depth_m" not in text,
+        "MODEL_CARD.md must document the actual evaluate_adaptation(records) signature",
+    )
 
 
 def validate_identity_consistency() -> None:
@@ -314,6 +315,10 @@ def validate_release_status() -> None:
     _check(match is not None, "STATUS.md must declare 'Current status: **Candidate**' or '**Release-grade**'")
     token = match.group(1)
     readme = _read(ROOT / "README.md")
+    _check(
+        "val_records=heldout_records" in readme and "validation_records=" not in readme,
+        "README.md must use the actual finetune(..., val_records=...) keyword",
+    )
     _check("## Release status" in readme, "README.md must have a '## Release status' section")
     section = readme.split("## Release status", 1)[1]
     _check(section.lstrip().startswith(f"**{token}"), f"README.md release status must open with **{token}**")

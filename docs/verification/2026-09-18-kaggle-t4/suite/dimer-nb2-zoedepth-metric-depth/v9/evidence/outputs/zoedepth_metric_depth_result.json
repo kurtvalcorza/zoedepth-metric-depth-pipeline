@@ -1,0 +1,142 @@
+{
+  "dataset": {
+    "kind": "generated",
+    "train": {
+      "records": 18,
+      "unique_ids": 18,
+      "valid_depth_pixels": 221184,
+      "depth_min_m": 0.8117600083351135,
+      "depth_max_m": 4.2755045890808105,
+      "depth_median_m": 2.298952102661133,
+      "dataset_sha256": "24eeffb1e5d1e5474ffc20d40d7f36d08acb6f523f8c9c1fab6c62dd88192ec6",
+      "verdict": "accepted"
+    },
+    "validation": {
+      "records": 6,
+      "unique_ids": 6,
+      "valid_depth_pixels": 73728,
+      "depth_min_m": 0.7304480671882629,
+      "depth_max_m": 4.37999963760376,
+      "depth_median_m": 2.1335408687591553,
+      "dataset_sha256": "7326c5cc0ac5b18892a241a6d5943251d8e9a84d97d953c7eec5188eaa3a07c3",
+      "verdict": "accepted"
+    },
+    "overlap_ids": []
+  },
+  "adaptation": {
+    "method": "frozen-backbone-metric-head-gradient-adaptation",
+    "trainable_prefixes": [
+      "metric_head."
+    ],
+    "trainable_parameters": 1761754,
+    "frozen_parameters": 343311553,
+    "epochs": 2,
+    "learning_rate": 1e-05,
+    "batch_size": 1,
+    "seed": 42,
+    "optimizer": "AdamW",
+    "optimizer_betas": [
+      0.9,
+      0.999
+    ],
+    "optimizer_epsilon": 1e-08,
+    "optimizer_weight_decay": 0.01,
+    "loss": "mean-absolute-log-depth-error",
+    "train_manifest": {
+      "records": 18,
+      "unique_ids": 18,
+      "valid_depth_pixels": 221184,
+      "depth_min_m": 0.8117600083351135,
+      "depth_max_m": 4.2755045890808105,
+      "depth_median_m": 2.298952102661133,
+      "dataset_sha256": "24eeffb1e5d1e5474ffc20d40d7f36d08acb6f523f8c9c1fab6c62dd88192ec6",
+      "verdict": "accepted"
+    },
+    "validation_manifest": {
+      "records": 6,
+      "unique_ids": 6,
+      "valid_depth_pixels": 73728,
+      "depth_min_m": 0.7304480671882629,
+      "depth_max_m": 4.37999963760376,
+      "depth_median_m": 2.1335408687591553,
+      "dataset_sha256": "7326c5cc0ac5b18892a241a6d5943251d8e9a84d97d953c7eec5188eaa3a07c3",
+      "verdict": "accepted"
+    },
+    "training_median_depth_m": 2.298952102661133,
+    "baseline_validation_log_l1": 0.43331079185009,
+    "history": [
+      {
+        "epoch": 1,
+        "train_log_l1": 0.422784,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.428735
+      },
+      {
+        "epoch": 2,
+        "train_log_l1": 0.418089,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.425855
+      }
+    ],
+    "weight_delta_l2": 0.0988005174600225
+  },
+  "evaluation": {
+    "task": "monocular-metric-depth-adaptation",
+    "verdict": "sample-sanity",
+    "estimation": "fixed generated held-out split",
+    "baseline_pretrained": {
+      "records": 6,
+      "valid_pixels": 73728,
+      "abs_rel": 0.4310957719182442,
+      "delta1": 0.21122233072916666,
+      "constant_median_baseline_abs_rel": 0.45260539228211055,
+      "constant_median_baseline_delta1": 0.2577582465277778
+    },
+    "adapted": {
+      "records": 6,
+      "valid_pixels": 73728,
+      "abs_rel": 0.4662034087787624,
+      "delta1": 0.2120090060763889,
+      "constant_median_baseline_abs_rel": 0.45260539228211055,
+      "constant_median_baseline_delta1": 0.2577582465277778,
+      "abs_rel_delta_vs_baseline": 0.013598016496651821,
+      "delta1_delta_vs_baseline": -0.045749240451388895
+    },
+    "weight_delta_l2": 0.0988005174600225
+  },
+  "unseen": {
+    "id": "generated-depth-24",
+    "abs_rel": 0.4337119787462223,
+    "delta1": 0.21500651041666666,
+    "depth_file": "outputs/zoedepth_metric_depth_unseen_depth.npy"
+  },
+  "artifact": {
+    "verification": "PASSED",
+    "rtol": 1e-05,
+    "atol": 1e-05,
+    "max_abs_diff": 0.0,
+    "artifact_dir": "outputs/zoedepth-metric-head-adapter-v1"
+  },
+  "notebook_source": {
+    "repository": "zoedepth-metric-depth-pipeline",
+    "repository_revision": "f0cedd2892eebaf99e6b598aa60cecf669ba50f4",
+    "embedded_module": "src/zoedepth_metric_depth_pipeline/pipeline.py",
+    "embedded_modules": [
+      "src/zoedepth_metric_depth_pipeline/pipeline.py"
+    ],
+    "module_sha256": "1107ff98322c57e76c82ac41172059470ca36163f990de1a1ed0b455c1e07ba2",
+    "generator": "build_notebook.py/2",
+    "notebook_spec": "2.0"
+  },
+  "repository_revision": "f0cedd2892eebaf99e6b598aa60cecf669ba50f4",
+  "base_model": {
+    "id": "Intel/zoedepth-nyu-kitti",
+    "revision": "f364d4c7936e91f465abba182208dd68142bf0ca"
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "torch": "2.14.0+cu130",
+    "transformers": "4.57.6",
+    "device": "cuda:0"
+  }
+}

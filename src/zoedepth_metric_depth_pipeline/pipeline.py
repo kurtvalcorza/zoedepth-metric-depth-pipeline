@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +28,15 @@ MODEL_LICENSE = "mit"
 MODEL_KEY = "zoedepth-nyu-kitti"
 DEFAULT_WEIGHTS_DIR = Path(__file__).resolve().parents[2] / "weights" / MODEL_KEY
 MANIFEST_NAME = "dimer-base-manifest.json"
+ARTIFACT_FORMAT = "org.valcorza.zoedepth.metric-head-adapter"
+ARTIFACT_FORMAT_VERSION = "1.0"
+ARTIFACT_MANIFEST_NAME = "manifest.json"
+ARTIFACT_WEIGHTS_NAME = "adapter.safetensors"
+MAX_ARTIFACT_MANIFEST_BYTES = 64 * 1024
+MAX_ARTIFACT_HEADER_BYTES = 1024 * 1024
+TRAINABLE_PREFIXES = ("metric_head.",)
+MAX_ADAPTATION_RECORDS = 128
+MAX_ADAPTATION_PIXELS = 32 * 1024 * 1024
 
 # Input ceilings. The ZoeDepth processor resizes the image to fit 384x512 while keeping the aspect
 # ratio (sides rounded to multiples of 32) and pads, so the backbone cost grows with the aspect ratio,
@@ -317,12 +328,138 @@ def evaluation_report(
     }
 
 
+def validate_depth_dataset(records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Validate paired RGB images and positive metric-depth targets for adaptation."""
+    if isinstance(records, str | bytes) or not isinstance(records, Sequence):
+        raise TypeError("records must be a sequence of mappings")
+    if not 2 <= len(records) <= MAX_ADAPTATION_RECORDS:
+        raise ValueError(f"record count {len(records)} outside 2..{MAX_ADAPTATION_RECORDS}")
+    ids: list[str] = []
+    digest = hashlib.sha256()
+    valid_pixels = 0
+    depth_values: list[np.ndarray] = []
+    for index, record in enumerate(records):
+        if not isinstance(record, Mapping):
+            raise TypeError(f"record {index} must be a mapping")
+        record_id = record.get("id")
+        if not isinstance(record_id, str) or not record_id.strip():
+            raise ValueError(f"record {index} id must be a non-empty string")
+        if record_id in ids:
+            raise ValueError(f"duplicate record id: {record_id}")
+        ids.append(record_id)
+        image = validate_image(record.get("image"))
+        depth = np.asarray(record.get("depth_m"), dtype=np.float32)
+        if depth.shape != (image.height, image.width):
+            raise ValueError(
+                f"record {record_id} depth shape {depth.shape} != image {(image.height, image.width)}"
+            )
+        if not np.all(np.isfinite(depth)) or np.any(depth <= 0):
+            raise ValueError(f"record {record_id} depth_m must contain finite positive metres")
+        if float(depth.max()) > 80.0:
+            raise ValueError(f"record {record_id} depth_m exceeds the 80 m model ceiling")
+        valid_pixels += int(depth.size)
+        if valid_pixels > MAX_ADAPTATION_PIXELS:
+            raise ValueError(
+                f"dataset has {valid_pixels} pixels, exceeding MAX_ADAPTATION_PIXELS "
+                f"{MAX_ADAPTATION_PIXELS}"
+            )
+        depth_values.append(depth.reshape(-1))
+        digest.update(record_id.encode("utf-8"))
+        digest.update(
+            json.dumps(
+                {"image_shape": [image.height, image.width, 3], "depth_shape": list(depth.shape)},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        digest.update(np.asarray(image, dtype=np.uint8).tobytes())
+        digest.update(depth.tobytes())
+    all_depth = np.concatenate(depth_values)
+    return {
+        "records": len(records),
+        "unique_ids": len(ids),
+        "valid_depth_pixels": valid_pixels,
+        "depth_min_m": float(all_depth.min()),
+        "depth_max_m": float(all_depth.max()),
+        "depth_median_m": float(np.median(all_depth)),
+        "dataset_sha256": digest.hexdigest(),
+        "verdict": "accepted",
+    }
+
+
+def _depth_record_content_sha256(record: Mapping[str, Any]) -> str:
+    """Fingerprint one validated RGB/depth pair without trusting its caller-supplied ID."""
+    image = validate_image(record["image"])
+    depth = np.asarray(record["depth_m"], dtype=np.float32)
+    digest = hashlib.sha256()
+    digest.update(
+        json.dumps(
+            {"image_shape": [image.height, image.width, 3], "depth_shape": list(depth.shape)},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+    digest.update(np.asarray(image, dtype=np.uint8).tobytes())
+    digest.update(depth.tobytes())
+    return digest.hexdigest()
+
+
+def _depth_record_rgb_sha256(record: Mapping[str, Any]) -> str:
+    """Fingerprint a validated RGB input independently of its ID and depth target."""
+    image = validate_image(record["image"])
+    digest = hashlib.sha256()
+    digest.update(
+        json.dumps(
+            {"image_shape": [image.height, image.width, 3]},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+    digest.update(np.asarray(image, dtype=np.uint8).tobytes())
+    return digest.hexdigest()
+
+
+def _prepare_depth_target(
+    depth_m: Any,
+    processor: Any,
+    *,
+    output_size: tuple[int, int],
+    device: Any,
+) -> Any:
+    """Apply ZoeDepth's spatial pad/resize geometry to a metric-depth target."""
+    import torch
+    import torch.nn.functional as F
+
+    depth = np.asarray(depth_m, dtype=np.float32)
+    if getattr(processor, "do_pad", False):
+        pad_image = getattr(processor, "pad_image", None)
+        if not callable(pad_image):
+            raise RuntimeError("ZoeDepth processor enables padding but exposes no pad_image method")
+        depth = np.asarray(
+            pad_image(
+                depth[..., None],
+                input_data_format="channels_last",
+                data_format="channels_last",
+            ),
+            dtype=np.float32,
+        )[..., 0]
+    target = torch.from_numpy(np.ascontiguousarray(depth)).to(device)
+    # ZoeDepth's image resize uses align_corners=True. Bilinear depth resampling preserves the same
+    # coordinate grid while avoiding image-specific bicubic overshoot in metric targets.
+    return F.interpolate(
+        target[None, None], size=output_size, mode="bilinear", align_corners=True
+    )[:, 0]
+
+
 @dataclass
 class ZoeDepthMetricPipeline:
     """Monocular metric depth estimation over the pinned ZoeDepth NYU+KITTI checkpoint."""
 
     _runner: Callable[[Image.Image, bool], np.ndarray]
     device: str
+    model: Any | None = None
+    processor: Any | None = None
+    adaptation_config: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_pretrained(
@@ -371,7 +508,440 @@ class ZoeDepthMetricPipeline:
             )
             return post[0]["predicted_depth"].float().cpu().numpy()
 
-        return cls(runner, resolved_device)
+        return cls(runner, resolved_device, model=model, processor=processor)
+
+    def freeze_for_adaptation(self) -> dict[str, int]:
+        """Freeze ZoeDepth except its metric head."""
+        if self.model is None:
+            raise RuntimeError("cannot configure adaptation without an underlying torch model")
+        trainable = frozen = 0
+        for name, parameter in self.model.named_parameters():
+            parameter.requires_grad = name.startswith(TRAINABLE_PREFIXES)
+            if parameter.requires_grad:
+                trainable += parameter.numel()
+            else:
+                frozen += parameter.numel()
+        if trainable == 0:
+            raise RuntimeError("ZoeDepth adaptation selected no trainable parameters")
+        self.adaptation_config = {
+            "method": "frozen-backbone-metric-head-gradient-adaptation",
+            "trainable_prefixes": list(TRAINABLE_PREFIXES),
+            "trainable_parameters": trainable,
+            "frozen_parameters": frozen,
+        }
+        return {"trainable_parameters": trainable, "frozen_parameters": frozen}
+
+    def finetune(
+        self,
+        train_records: Sequence[Mapping[str, Any]],
+        val_records: Sequence[Mapping[str, Any]] | None = None,
+        *,
+        epochs: int = 2,
+        learning_rate: float = 1e-5,
+        seed: int = 42,
+    ) -> list[dict[str, Any]]:
+        """Run bounded metric-head adaptation using log-depth L1 loss."""
+        import random
+
+        import torch
+        from torch.optim import AdamW
+
+        if self.model is None or self.processor is None:
+            raise RuntimeError("cannot fine-tune without the underlying model and processor")
+        if isinstance(epochs, bool) or not isinstance(epochs, int) or not 1 <= epochs <= 20:
+            raise ValueError("epochs must be an int in 1..20")
+        if not isinstance(learning_rate, int | float) or isinstance(learning_rate, bool):
+            raise TypeError("learning_rate must be numeric")
+        if not 0 < float(learning_rate) <= 1e-2:
+            raise ValueError("learning_rate must be in (0, 1e-2]")
+        train_manifest = validate_depth_dataset(train_records)
+        val_manifest = validate_depth_dataset(val_records) if val_records else None
+        total_records = train_manifest["records"] + (
+            val_manifest["records"] if val_manifest is not None else 0
+        )
+        if total_records > MAX_ADAPTATION_RECORDS:
+            raise ValueError(
+                f"combined train and validation record count {total_records} exceeds "
+                f"MAX_ADAPTATION_RECORDS {MAX_ADAPTATION_RECORDS}"
+            )
+        total_pixels = train_manifest["valid_depth_pixels"] + (
+            val_manifest["valid_depth_pixels"] if val_manifest is not None else 0
+        )
+        if total_pixels > MAX_ADAPTATION_PIXELS:
+            raise ValueError(
+                f"combined train and validation data has {total_pixels} pixels, exceeding "
+                f"MAX_ADAPTATION_PIXELS {MAX_ADAPTATION_PIXELS}"
+            )
+        if val_records:
+            train_ids = {str(record["id"]) for record in train_records}
+            val_ids = {str(record["id"]) for record in val_records}
+            overlapping_ids = sorted(train_ids & val_ids)
+            if overlapping_ids:
+                raise ValueError(
+                    f"train and validation records overlap by id: {overlapping_ids[:5]}"
+                )
+            train_rgb = {_depth_record_rgb_sha256(record) for record in train_records}
+            val_rgb = {_depth_record_rgb_sha256(record) for record in val_records}
+            if train_rgb & val_rgb:
+                raise ValueError("train and validation records overlap by RGB content")
+            train_content = {_depth_record_content_sha256(record) for record in train_records}
+            val_content = {_depth_record_content_sha256(record) for record in val_records}
+            if train_content & val_content:
+                raise ValueError("train and validation records overlap by RGB/depth content")
+        if not self.adaptation_config:
+            self.freeze_for_adaptation()
+        if any(
+            parameter.requires_grad and not name.startswith(TRAINABLE_PREFIXES)
+            for name, parameter in self.model.named_parameters()
+        ):
+            raise RuntimeError("parameters outside the declared ZoeDepth adapter surface are trainable")
+
+        torch.manual_seed(seed)
+        device = torch.device(self.device)
+        self.model.to(device).eval()
+        self.model.metric_head.train()
+        trainable = {
+            name: parameter
+            for name, parameter in self.model.named_parameters()
+            if parameter.requires_grad
+        }
+        if not trainable:
+            raise RuntimeError("model has no trainable parameters")
+        before = {name: parameter.detach().cpu().clone() for name, parameter in trainable.items()}
+        optimizer_betas = (0.9, 0.999)
+        optimizer_epsilon = 1e-8
+        optimizer_weight_decay = 0.01
+        optimizer = AdamW(
+            list(trainable.values()),
+            lr=float(learning_rate),
+            betas=optimizer_betas,
+            eps=optimizer_epsilon,
+            weight_decay=optimizer_weight_decay,
+        )
+
+        def loss_for(record: Mapping[str, Any]) -> torch.Tensor:
+            inputs = self.processor(
+                images=validate_image(record["image"]), return_tensors="pt"
+            ).to(device)
+            prediction = self.model(pixel_values=inputs["pixel_values"]).predicted_depth
+            target = _prepare_depth_target(
+                record["depth_m"],
+                self.processor,
+                output_size=tuple(prediction.shape[-2:]),
+                device=device,
+            )
+            return torch.mean(torch.abs(torch.log(prediction.clamp_min(1e-3)) - torch.log(target)))
+
+        def validation_loss() -> float | None:
+            if not val_records:
+                return None
+            self.model.eval()
+            with torch.inference_mode():
+                value = float(np.mean([float(loss_for(record).item()) for record in val_records]))
+            self.model.metric_head.train()
+            return value
+
+        baseline_val_loss = validation_loss()
+        history: list[dict[str, Any]] = []
+        previous_config = dict(self.adaptation_config)
+        for key in (
+            "epochs",
+            "learning_rate",
+            "batch_size",
+            "seed",
+            "optimizer",
+            "optimizer_betas",
+            "optimizer_epsilon",
+            "optimizer_weight_decay",
+            "loss",
+            "train_manifest",
+            "validation_manifest",
+            "training_median_depth_m",
+            "baseline_validation_log_l1",
+            "history",
+            "weight_delta_l2",
+        ):
+            self.adaptation_config.pop(key, None)
+        try:
+            for epoch in range(1, epochs + 1):
+                order = list(range(len(train_records)))
+                random.Random(seed + epoch * 19).shuffle(order)
+                total_loss = 0.0
+                for index in order:
+                    optimizer.zero_grad(set_to_none=True)
+                    loss = loss_for(train_records[index])
+                    if not bool(torch.isfinite(loss)):
+                        raise RuntimeError("fine-tuning produced a non-finite loss")
+                    loss.backward()
+                    optimizer.step()
+                    if any(
+                        not bool(torch.isfinite(parameter).all())
+                        for parameter in trainable.values()
+                    ):
+                        raise RuntimeError("fine-tuning produced non-finite adapter weights")
+                    total_loss += float(loss.item())
+                epoch_data: dict[str, Any] = {
+                    "epoch": epoch,
+                    "train_log_l1": round(total_loss / len(train_records), 6),
+                    "optimizer_steps": len(train_records),
+                }
+                current_val = validation_loss()
+                if current_val is not None:
+                    if not math.isfinite(current_val):
+                        raise RuntimeError("fine-tuning produced a non-finite validation loss")
+                    epoch_data["val_log_l1"] = round(current_val, 6)
+                history.append(epoch_data)
+
+            delta_sq = 0.0
+            for name, parameter in trainable.items():
+                delta_sq += float(
+                    torch.sum((parameter.detach().cpu() - before[name]) ** 2).item()
+                )
+            weight_delta_l2 = delta_sq**0.5
+            if not math.isfinite(weight_delta_l2):
+                raise RuntimeError("fine-tuning produced a non-finite weight delta")
+            if weight_delta_l2 == 0.0:
+                raise RuntimeError("fine-tuning completed without changing adapter weights")
+            self.model.eval()
+            self.adaptation_config.update(
+                {
+                    "epochs": epochs,
+                    "learning_rate": float(learning_rate),
+                    "batch_size": 1,
+                    "seed": seed,
+                    "optimizer": "AdamW",
+                    "optimizer_betas": list(optimizer_betas),
+                    "optimizer_epsilon": optimizer_epsilon,
+                    "optimizer_weight_decay": optimizer_weight_decay,
+                    "loss": "mean-absolute-log-depth-error",
+                    "train_manifest": train_manifest,
+                    "validation_manifest": val_manifest,
+                    "training_median_depth_m": train_manifest["depth_median_m"],
+                    "baseline_validation_log_l1": baseline_val_loss,
+                    "history": history,
+                    "weight_delta_l2": weight_delta_l2,
+                }
+            )
+        except Exception:
+            with torch.no_grad():
+                for name, parameter in trainable.items():
+                    parameter.copy_(before[name].to(device=parameter.device, dtype=parameter.dtype))
+            self.adaptation_config = previous_config
+            self.model.eval()
+            raise
+        return history
+
+    def evaluate_adaptation(self, records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+        """Score metric depth on labelled records against a constant-median baseline."""
+        validate_depth_dataset(records)
+        train_median = self.adaptation_config.get("training_median_depth_m")
+        if not isinstance(train_median, int | float) or train_median <= 0:
+            raise RuntimeError("adaptation metadata does not contain a positive training median")
+        model_abs_rel_sum = 0.0
+        model_delta1_hits = 0
+        baseline_abs_rel_sum = 0.0
+        baseline_delta1_hits = 0
+        valid_pixels = 0
+        for record in records:
+            prediction = np.asarray(self.predict(record["image"])["depth"], dtype=np.float64)
+            reference = np.asarray(record["depth_m"], dtype=np.float64)
+            baseline = np.full_like(reference, float(train_median))
+            valid = _valid_mask(prediction, reference)
+            count = int(valid.sum())
+            valid_pixels += count
+            model_abs_rel_sum += float(
+                np.sum(np.abs(prediction[valid] - reference[valid]) / reference[valid])
+            )
+            model_ratio = np.maximum(
+                prediction[valid] / reference[valid], reference[valid] / prediction[valid]
+            )
+            model_delta1_hits += int(np.sum(model_ratio < DELTA_THRESHOLD))
+            baseline_abs_rel_sum += float(
+                np.sum(np.abs(baseline[valid] - reference[valid]) / reference[valid])
+            )
+            baseline_ratio = np.maximum(
+                baseline[valid] / reference[valid], reference[valid] / baseline[valid]
+            )
+            baseline_delta1_hits += int(np.sum(baseline_ratio < DELTA_THRESHOLD))
+        model_abs_rel = model_abs_rel_sum / valid_pixels
+        model_delta1 = model_delta1_hits / valid_pixels
+        baseline_abs_rel = baseline_abs_rel_sum / valid_pixels
+        baseline_delta1 = baseline_delta1_hits / valid_pixels
+        return {
+            "records": len(records),
+            "valid_pixels": valid_pixels,
+            "abs_rel": model_abs_rel,
+            "delta1": model_delta1,
+            "constant_median_baseline_abs_rel": baseline_abs_rel,
+            "constant_median_baseline_delta1": baseline_delta1,
+            "abs_rel_delta_vs_baseline": model_abs_rel - baseline_abs_rel,
+            "delta1_delta_vs_baseline": model_delta1 - baseline_delta1,
+        }
+
+    def save_artifact(self, output_dir: str | Path, *, producer_revision: str) -> Path:
+        """Write safe metric-head weights plus a closed integrity manifest."""
+        from safetensors.torch import save_file
+
+        weight_delta = self.adaptation_config.get("weight_delta_l2")
+        training_median = self.adaptation_config.get("training_median_depth_m")
+        history = self.adaptation_config.get("history")
+        if (
+            self.model is None
+            or not isinstance(weight_delta, int | float)
+            or isinstance(weight_delta, bool)
+            or not math.isfinite(float(weight_delta))
+            or weight_delta <= 0
+            or not isinstance(training_median, int | float)
+            or isinstance(training_median, bool)
+            or not math.isfinite(float(training_median))
+            or training_median <= 0
+            or not isinstance(history, list)
+            or not history
+        ):
+            raise RuntimeError("artifact export requires completed finite fine-tuning metadata")
+        if len(producer_revision) != 40 or any(ch not in "0123456789abcdef" for ch in producer_revision):
+            raise ValueError("producer_revision must be a lowercase 40-hex Git commit")
+        root = Path(output_dir)
+        root.mkdir(parents=True, exist_ok=True)
+        if any(root.iterdir()):
+            raise FileExistsError(f"artifact directory is not empty: {root}")
+        state = {
+            name: tensor.detach().cpu().contiguous()
+            for name, tensor in self.model.state_dict().items()
+            if name.startswith(TRAINABLE_PREFIXES)
+        }
+        if not state:
+            raise RuntimeError("no adapter tensors selected for export")
+        weights_path = root / ARTIFACT_WEIGHTS_NAME
+        save_file(state, str(weights_path))
+        manifest = {
+            "artifactSpec": "1.0",
+            "format": ARTIFACT_FORMAT,
+            "formatVersion": ARTIFACT_FORMAT_VERSION,
+            "artifactClass": "ADAPTER",
+            "artifactKind": "zoedepth-metric-head-adapter",
+            "producer": {
+                "pipelineId": "zoedepth-metric-depth-pipeline",
+                "revision": producer_revision,
+            },
+            "createdAtUtc": datetime.now(UTC).isoformat(),
+            "baseModel": {"id": MODEL_ID, "revision": MODEL_REVISION},
+            "files": [
+                {
+                    "path": ARTIFACT_WEIGHTS_NAME,
+                    "bytes": weights_path.stat().st_size,
+                    "sha256": _sha256(weights_path),
+                }
+            ],
+            "adaptation": dict(self.adaptation_config),
+            "trainablePrefixes": list(TRAINABLE_PREFIXES),
+            "retainedData": {"containsTrainingRecords": False, "containsSupportRecords": False},
+            "serialization": "safetensors",
+        }
+        (root / ARTIFACT_MANIFEST_NAME).write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        return root
+
+    def load_artifact(self, artifact_dir: str | Path) -> dict[str, Any]:
+        """Verify and load a ZoeDepth adapter without code-capable deserialization."""
+        from safetensors.torch import load_file
+
+        if self.model is None:
+            raise RuntimeError("cannot load an artifact without an underlying torch model")
+        root = Path(artifact_dir)
+        manifest_path = root / ARTIFACT_MANIFEST_NAME
+        if not manifest_path.is_file():
+            raise FileNotFoundError(f"artifact manifest not found: {manifest_path}")
+        expected_files = {ARTIFACT_MANIFEST_NAME, ARTIFACT_WEIGHTS_NAME}
+        actual_entries = {path.name for path in root.iterdir()}
+        if actual_entries != expected_files:
+            raise ValueError(
+                f"artifact directory must contain exactly {sorted(expected_files)}, "
+                f"found {sorted(actual_entries)}"
+            )
+        if manifest_path.stat().st_size > MAX_ARTIFACT_MANIFEST_BYTES:
+            raise ValueError("artifact manifest exceeds the permitted size")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("format") != ARTIFACT_FORMAT:
+            raise ValueError(f"unrecognized artifact format: {manifest.get('format')}")
+        if manifest.get("formatVersion") != ARTIFACT_FORMAT_VERSION:
+            raise ValueError(f"unsupported artifact formatVersion: {manifest.get('formatVersion')}")
+        if manifest.get("baseModel") != {"id": MODEL_ID, "revision": MODEL_REVISION}:
+            raise ValueError("artifact base model identity is incompatible")
+        if manifest.get("trainablePrefixes") != list(TRAINABLE_PREFIXES):
+            raise ValueError("artifact trainable prefixes do not match this pipeline")
+        files = manifest.get("files")
+        if not isinstance(files, list) or len(files) != 1:
+            raise ValueError("artifact manifest must inventory exactly one weights file")
+        entry = files[0]
+        if entry.get("path") != ARTIFACT_WEIGHTS_NAME:
+            raise ValueError("artifact manifest names an unexpected weights path")
+        weights_path = root / ARTIFACT_WEIGHTS_NAME
+        if not weights_path.is_file():
+            raise FileNotFoundError(f"artifact weights not found: {weights_path}")
+        weights_bytes = weights_path.stat().st_size
+        if weights_bytes != entry.get("bytes"):
+            raise ValueError("artifact weights failed size or SHA-256 verification")
+        adaptation = manifest.get("adaptation")
+        if not isinstance(adaptation, dict):
+            raise ValueError("artifact adaptation metadata must be a mapping")
+        destination = self.model.state_dict()
+        expected = {name for name in destination if name.startswith(TRAINABLE_PREFIXES)}
+        expected_payload_bytes = sum(
+            destination[name].numel() * destination[name].element_size() for name in expected
+        )
+        with weights_path.open("rb") as stream:
+            header_prefix = stream.read(8)
+        if len(header_prefix) != 8:
+            raise ValueError("artifact weights do not contain a complete SafeTensors header")
+        header_bytes = int.from_bytes(header_prefix, byteorder="little", signed=False)
+        if not 0 < header_bytes <= MAX_ARTIFACT_HEADER_BYTES:
+            raise ValueError("artifact SafeTensors header exceeds the permitted size")
+        expected_serialized_bytes = 8 + header_bytes + expected_payload_bytes
+        if weights_bytes != expected_serialized_bytes:
+            raise ValueError(
+                "artifact serialized size does not match the declared adapter surface"
+            )
+        if _sha256(weights_path) != entry.get("sha256"):
+            raise ValueError("artifact weights failed size or SHA-256 verification")
+        # Materialize only after the closed inventory has imposed a tight serialized-size ceiling,
+        # and stage on CPU so an untrusted artifact cannot allocate directly into accelerator RAM.
+        state = load_file(str(weights_path), device="cpu")
+        if set(state) != expected:
+            raise ValueError("artifact tensor inventory does not match the declared adapter surface")
+        for name, tensor in state.items():
+            expected_tensor = destination[name]
+            if tensor.shape != expected_tensor.shape or tensor.dtype != expected_tensor.dtype:
+                raise ValueError(
+                    f"artifact tensor {name} has shape/dtype {tuple(tensor.shape)}/{tensor.dtype}; "
+                    f"expected {tuple(expected_tensor.shape)}/{expected_tensor.dtype}"
+                )
+            if not bool(tensor.isfinite().all()):
+                raise ValueError(f"artifact tensor {name} contains non-finite values")
+        self.model.load_state_dict(state, strict=False)
+        # A freshly constructed base model is fully trainable. Restore the declared adapter surface
+        # so a verified artifact can be fine-tuned again without exposing the backbone.
+        self.freeze_for_adaptation()
+        self.model.to(self.device).eval()
+        self.adaptation_config = dict(adaptation)
+        return manifest
+
+    @classmethod
+    def from_artifact(
+        cls,
+        artifact_dir: str | Path,
+        *,
+        device: str | None = None,
+        weights_dir: str | Path | None = None,
+        allow_download: bool = False,
+    ) -> ZoeDepthMetricPipeline:
+        """Construct a fresh pinned base model and attach a verified adapter."""
+        pipeline = cls.from_pretrained(
+            device=device, weights_dir=weights_dir, allow_download=allow_download
+        )
+        pipeline.load_artifact(artifact_dir)
+        return pipeline
 
     def predict(self, image: Image.Image, *, flip_augmentation: bool = FLIP_AUGMENTATION) -> dict[str, Any]:
         """Return metric depth in metres as a float32 H x W array at the input resolution."""

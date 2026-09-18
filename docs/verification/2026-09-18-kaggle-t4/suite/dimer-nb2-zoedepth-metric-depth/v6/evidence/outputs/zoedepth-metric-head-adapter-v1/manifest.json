@@ -1,0 +1,88 @@
+{
+  "artifactSpec": "1.0",
+  "format": "org.valcorza.zoedepth.metric-head-adapter",
+  "formatVersion": "1.0",
+  "artifactClass": "ADAPTER",
+  "artifactKind": "zoedepth-metric-head-adapter",
+  "producer": {
+    "pipelineId": "zoedepth-metric-depth-pipeline",
+    "revision": "f11c57957a8a77a78134c257287edb45549b561e"
+  },
+  "createdAtUtc": "2026-09-18T01:53:09.584920+00:00",
+  "baseModel": {
+    "id": "Intel/zoedepth-nyu-kitti",
+    "revision": "f364d4c7936e91f465abba182208dd68142bf0ca"
+  },
+  "files": [
+    {
+      "path": "adapter.safetensors",
+      "bytes": 7064048,
+      "sha256": "251f7970b6571a8589aec183c3a25f7e269c12b14c8a0297f0aa11c30f05ad87"
+    }
+  ],
+  "adaptation": {
+    "method": "frozen-backbone-metric-head-gradient-adaptation",
+    "trainable_prefixes": [
+      "metric_head."
+    ],
+    "trainable_parameters": 1761754,
+    "frozen_parameters": 343311553,
+    "epochs": 2,
+    "learning_rate": 1e-05,
+    "batch_size": 1,
+    "seed": 42,
+    "optimizer": "AdamW",
+    "optimizer_betas": [
+      0.9,
+      0.999
+    ],
+    "optimizer_epsilon": 1e-08,
+    "optimizer_weight_decay": 0.01,
+    "loss": "mean-absolute-log-depth-error",
+    "train_manifest": {
+      "records": 18,
+      "unique_ids": 18,
+      "valid_depth_pixels": 221184,
+      "depth_min_m": 0.8117600083351135,
+      "depth_max_m": 4.2755045890808105,
+      "depth_median_m": 2.298952102661133,
+      "dataset_sha256": "24eeffb1e5d1e5474ffc20d40d7f36d08acb6f523f8c9c1fab6c62dd88192ec6",
+      "verdict": "accepted"
+    },
+    "validation_manifest": {
+      "records": 6,
+      "unique_ids": 6,
+      "valid_depth_pixels": 73728,
+      "depth_min_m": 0.7304480671882629,
+      "depth_max_m": 4.37999963760376,
+      "depth_median_m": 2.1335408687591553,
+      "dataset_sha256": "7326c5cc0ac5b18892a241a6d5943251d8e9a84d97d953c7eec5188eaa3a07c3",
+      "verdict": "accepted"
+    },
+    "training_median_depth_m": 2.298952102661133,
+    "baseline_validation_log_l1": 0.43331079185009,
+    "history": [
+      {
+        "epoch": 1,
+        "train_log_l1": 0.422784,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.428735
+      },
+      {
+        "epoch": 2,
+        "train_log_l1": 0.418089,
+        "optimizer_steps": 18,
+        "val_log_l1": 0.425855
+      }
+    ],
+    "weight_delta_l2": 0.09880053662346641
+  },
+  "trainablePrefixes": [
+    "metric_head."
+  ],
+  "retainedData": {
+    "containsTrainingRecords": false,
+    "containsSupportRecords": false
+  },
+  "serialization": "safetensors"
+}
