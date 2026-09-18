@@ -12,6 +12,7 @@ from zoedepth_metric_depth_pipeline.pipeline import (
     ARTIFACT_MANIFEST_NAME,
     ARTIFACT_WEIGHTS_NAME,
     ZoeDepthMetricPipeline,
+    _prepare_depth_target,
     validate_depth_dataset,
 )
 
@@ -91,6 +92,42 @@ def test_finetune_updates_only_metric_head():
     assert history[0]["optimizer_steps"] == 2
     assert not torch.equal(before, after)
     assert pipeline.adaptation_config["weight_delta_l2"] > 0
+
+
+def test_finetune_rejects_train_validation_overlap_by_id_or_content():
+    records = _records()
+    with pytest.raises(ValueError, match="overlap by id"):
+        _pipeline().finetune(records[:2], records[1:3], epochs=1)
+
+    renamed = dict(records[0], id="renamed-depth")
+    with pytest.raises(ValueError, match="overlap by RGB/depth content"):
+        _pipeline().finetune(records[:2], [renamed, records[2]], epochs=1)
+
+
+def test_depth_target_uses_processor_padding_before_resize():
+    class _PaddingProcessor:
+        do_pad = True
+
+        def pad_image(self, image, *, input_data_format, data_format):
+            assert input_data_format == "channels_last"
+            assert data_format == "channels_last"
+            return np.pad(image, ((1, 1), (2, 2), (0, 0)), mode="reflect")
+
+    depth = np.arange(12, dtype=np.float32).reshape(3, 4) + 1.0
+    target = _prepare_depth_target(
+        depth,
+        _PaddingProcessor(),
+        output_size=(5, 8),
+        device=torch.device("cpu"),
+    )
+    padded = np.pad(depth, ((1, 1), (2, 2)), mode="reflect")
+    expected = torch.nn.functional.interpolate(
+        torch.from_numpy(padded)[None, None],
+        size=(5, 8),
+        mode="bilinear",
+        align_corners=True,
+    )[:, 0]
+    assert torch.equal(target, expected)
 
 
 def test_artifact_round_trip_and_integrity_rejection(tmp_path):

@@ -76,11 +76,11 @@ TEMPLATE = {
                 "import numpy as np\n"
                 "from PIL import Image\n\n"
                 "USE_BYOD = False  # @param {{type:\"boolean\"}}\n\n"
-                "def generated_depth_records():\n"
+                "def generated_depth_records(start=0, count=24):\n"
                 "    records = []\n"
                 "    height, width = 96, 128\n"
                 "    yy, xx = np.mgrid[:height, :width]\n"
-                "    for index in range(24):\n"
+                "    for index in range(start, start + count):\n"
                 "        phase = index * 0.19\n"
                 "        depth = 0.9 + 2.6 * yy / (height - 1) + 0.7 * xx / (width - 1)\n"
                 "        depth += 0.18 * np.sin(xx / 13.0 + phase)\n"
@@ -190,12 +190,9 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "## 9. Infer on an unseen generated image\n\nA horizontally flipped record, absent from both splits, exercises adapted serving and produces a metric-depth array.",
+            "md": "## 9. Infer on an unseen generated image\n\nA newly generated record outside the train/validation index range exercises adapted serving and produces a metric-depth array.",
             "code": (
-                "unseen = generated_depth_records()[0].copy()\n"
-                "unseen['id'] = 'unseen-flipped'\n"
-                "unseen['image'] = unseen['image'].transpose(Image.Transpose.FLIP_LEFT_RIGHT)\n"
-                "unseen['depth_m'] = np.fliplr(unseen['depth_m']).copy()\n"
+                "unseen = generated_depth_records(start=24, count=1)[0]\n"
                 "unseen_result = pipe.predict(unseen['image'])\n"
                 "unseen_abs_rel = abs_rel(unseen_result['depth'], unseen['depth_m'])\n"
                 "unseen_delta1 = delta1(unseen_result['depth'], unseen['depth_m'])\n"

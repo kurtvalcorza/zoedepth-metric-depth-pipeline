@@ -46,7 +46,9 @@ CODE_MARKERS = (
     "base_eval = score_records(pipe, val_records, training_median)",
     "parameter_counts = pipe.freeze_for_adaptation()",
     "history = pipe.finetune(train_records, val_records, epochs=2, learning_rate=1e-5, seed=42)",
+    "target = _prepare_depth_target(",
     "adapted_eval = pipe.evaluate_adaptation(val_records)",
+    "unseen = generated_depth_records(start=24, count=1)[0]",
     "unseen_result = pipe.predict(unseen['image'])",
     "artifact_dir = pipe.save_artifact(",
     "reloaded_pipe = ZoeDepthMetricPipeline.from_artifact(",
@@ -286,6 +288,10 @@ def validate_model_card() -> None:
         positions.append(matches[0])
     _check(positions == sorted(positions), "required model-card headings are out of order")
     _check("## Immutable provenance" in text, "MODEL_CARD.md must carry an '## Immutable provenance' section")
+    _check(
+        "evaluate_adaptation(records)" in text and "baseline_depth_m" not in text,
+        "MODEL_CARD.md must document the actual evaluate_adaptation(records) signature",
+    )
 
 
 def validate_identity_consistency() -> None:
@@ -307,6 +313,10 @@ def validate_release_status() -> None:
     _check(match is not None, "STATUS.md must declare 'Current status: **Candidate**' or '**Release-grade**'")
     token = match.group(1)
     readme = _read(ROOT / "README.md")
+    _check(
+        "val_records=heldout_records" in readme and "validation_records=" not in readme,
+        "README.md must use the actual finetune(..., val_records=...) keyword",
+    )
     _check("## Release status" in readme, "README.md must have a '## Release status' section")
     section = readme.split("## Release status", 1)[1]
     _check(section.lstrip().startswith(f"**{token}"), f"README.md release status must open with **{token}**")

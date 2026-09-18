@@ -71,7 +71,7 @@ The declared notebook environment is Python 3.12 with `torch==2.14.0`, `transfor
 
 ###### Performance Measures
 
-The depth map is an estimate in metres with no confidence; its minimum, median and maximum do not measure correctness. `abs_rel(pred, ref)` and `delta1(pred, ref)` score predictions without scale or shift alignment. `evaluate_adaptation(records, baseline_depth_m=...)` applies both to a validated labelled set and scores a constant training-median baseline beside the model. The E2E tutorial reports the pinned pretrained and adapted results on the same held-out split with the verdict `sample-sanity`. Synthetic results are workflow evidence, not an NYU/KITTI benchmark; deployment claims require representative sensor references that were not used for optimization.
+The depth map is an estimate in metres with no confidence; its minimum, median and maximum do not measure correctness. `abs_rel(pred, ref)` and `delta1(pred, ref)` score predictions without scale or shift alignment. `evaluate_adaptation(records)` applies both to a validated labelled set and scores the model beside the training-median baseline stored by `finetune`. The E2E tutorial reports the pinned pretrained and adapted results on the same held-out split with the verdict `sample-sanity`. Synthetic results are workflow evidence, not an NYU/KITTI benchmark; deployment claims require representative sensor references that were not used for optimization.
 
 ###### Decision thresholds
 
@@ -109,7 +109,7 @@ This pipeline is not intended for decisions in health, safety, criminal justice,
 - **Automation bias:** a clean depth render invites trust that an uncertainty-free estimate has not earned.
 - **Depth to people:** distances to people are estimated like any surface and can be surfaced or acted on; such uses fall under §Use cases.
 - **Bias amplification:** any scene population NYU and KITTI under-represent (other regions, cameras, weather, interiors) is reproduced as uneven accuracy, undetected because no per-scene evaluation exists.
-- **Resource use:** a 1.38 GB model and ~1.5 s per image on the reference CPU (2.7 s with flip); an image-heavy workload scales linearly, and the CUDA path was not measured.
+- **Resource use:** a 1.38 GB model and ~1.5 s per image on the reference CPU (2.7 s with flip); an image-heavy workload scales linearly. The CUDA fine-tuning/reload path has clean-runtime T4 workflow evidence, but CUDA inference throughput was not benchmarked.
 
 ###### Use cases
 
@@ -138,9 +138,9 @@ Prohibited even where the model would work: using the metres for collision avoid
 - Pins: `torch==2.14.0`, `torchvision==0.29.0`, `torchaudio==2.11.0`, `transformers==4.57.6`, `safetensors==0.8.0`, `numpy==2.5.3`, `pillow==11.3.0`, `huggingface-hub==0.36.2`; Python 3.12.
 - Precision: float32; preprocessing resizes the image to fit 384×512 keeping the aspect ratio (sides rounded to multiples of 32), pads and normalises with mean/std 0.5 (`ZoeDepthImageProcessor`, snapshot defaults); the prediction is un-padded and interpolated back to the input size by the processor's post-processing; optional flip augmentation averages a mirrored pass.
 - Measured 2026-09-14 in the Windows venv (`torch 2.14.0+cu130`) with `CUDA_VISIBLE_DEVICES=-1` and `HF_HUB_OFFLINE=1`, device `cpu`: `verify_snapshot` 0.72 s (4 files, 1.38 GB); load 5.33 s; `predict` on a synthetic 640×480 cartoon room (wall, floor, far cabinet, near box, window; drawn with Pillow) 1.47 s → 1.59–1.90 m, median 1.82 m; probes: near box 1.69 m, far cabinet 1.87 m, floor nearest the camera 1.68 m, wall top 1.86 m (near < far, the drawn ordering); with `flip_augmentation=True` 2.73 s, median 1.85 m, mean absolute difference 0.024 m; `evaluation_report` without a reference → `not-measurable`; blank 640×480 white image → 1.43–2.33 m (median 1.93 m); uniform noise → 1.39–1.82 m (median 1.68 m); 4096×4096 blank image 2.53 s at a 512×512 working resolution; a 1600×400 image works at 384×1408 and a 2000×400 one is refused by the aspect-ratio ceiling.
-- Tutorial execution: `tutorials/zoedepth_metric_depth_colab.ipynb` ran top-to-bottom in a fresh local kernel (all 8 code cells, 133.2 s including the 1.38 GB staging, same depth statistics and probe ordering as the smoke run, report `not-measurable` by design); recorded in `docs/release-verification.md` as pre-flight, not supported-runtime evidence.
+- Tutorial execution: the prior 8-cell local inference-only pre-flight has been superseded by the 11-cell E2E carrier. The corrected target-alignment revision requires a fresh clean-runtime Kaggle T4 run before its evidence can support promotion.
 - Tests: `pytest -q -o addopts= tests` — offline, no weights required; `ruff check src tests tools` clean.
-- Not executed: CUDA path, photographs (only a drawn room, blank images and noise), any `abs_rel`/`delta1` measurement against a real metric reference, outdoor scenes (the KITTI head), images of people.
+- Not executed: photographs (only generated scenes, a drawn room, blank images and noise), any `abs_rel`/`delta1` measurement against a real sensor reference, outdoor scenes (the KITTI head), images of people, or a CUDA throughput benchmark.
 
 ## References
 

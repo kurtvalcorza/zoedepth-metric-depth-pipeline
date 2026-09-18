@@ -27,7 +27,7 @@ reference = np.load("room_depth_m.npy")
 print(abs_rel(depth, reference), delta1(depth, reference))
 
 # optional E2E adaptation (use a separate held-out split)
-# report = pipe.finetune(train_records, validation_records=heldout_records, epochs=2)
+# report = pipe.finetune(train_records, val_records=heldout_records, epochs=2)
 # pipe.save_artifact("outputs/zoedepth-adapter", producer_revision="<git-sha>")
 # reloaded = ZoeDepthMetricPipeline.from_artifact("outputs/zoedepth-adapter")
 ```
@@ -59,7 +59,7 @@ No `pytorch_model.bin` exists upstream at this revision; SafeTensors is the only
 
 ## Release status
 
-**Candidate.** Exact commit `7bb7db6` and notebook blob `c5d97244af45` passed an 11/11-cell clean Kaggle T4 `Run all`. The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
+**Candidate.** The corrected depth-target alignment invalidates the earlier exact-blob qualification for the current carrier. A fresh 11-cell Kaggle T4 `Run all` is required and will be recorded in `docs/release-verification.md` before reviewer/integrator promotion.
 
 ## Documentation
 

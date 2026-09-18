@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact commit `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` and notebook blob `c5d97244af45b6522695ba5700a0bb1182edeebb` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the execution-evidence gate but does not itself perform reviewer/integrator promotion.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. The corrected depth-target padding/resize path changes the executable carrier, so a fresh exact-blob clean Kaggle T4 run is required. The earlier run remains recorded below as historical workflow evidence but does not satisfy the gate for the corrected revision.
 
 ## Automatic coverage
 
@@ -32,7 +32,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 | Date (UTC) | Commit / notebook blob | Executor | Path | Outcome |
 |---|---|---|---|---|
-| 2026-09-17 | `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` / `c5d97244af45b6522695ba5700a0bb1182edeebb` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v2) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 263.8 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; held-out AbsRel 0.431096 → 0.454204 and delta1 0.211222 → 0.211277; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
+| Awaiting rerun | Corrected target-alignment commit/blob to be recorded | Kaggle T4 | Default generated dataset | Required before promotion |
 
 ### Local E2E pre-flight (not promotion evidence)
 
@@ -40,12 +40,13 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 |---|---|---|---|
 | 2026-09-18 | Uncommitted generated carrier; metadata base revision `5fb52be92696` | Windows RTX 5070 Ti Laptop GPU, Python 3.14.2, torch 2.11.0+cu128, transformers 5.8.1; pinned install skipped | **PASS** — 11/11 code cells; 18 train + 6 held-out; 36 optimizer steps; 1,761,754 trainable / 343,311,553 frozen; weight delta 0.094411; held-out `abs_rel` 0.431046 → 0.454265 and `delta1` 0.211141 → 0.211249 versus constant-median 0.452605 / 0.257758; unseen `abs_rel` 0.427272; SafeTensors artifact and fresh-base reload max difference 0.0. This proves workflow execution, not quality improvement. |
 
-### Historical superseded carrier
+### Historical superseded carriers
 
 | Date (UTC) | Commit / notebook blob | Executor | Profile | Outcome |
 |---|---|---|---|---|
 | 2026-09-14 | `4cd28d1` / `3bcf19a2b16e` | Kaggle CPU | Earlier inference-only carrier | Passed its prior 8-cell path; it is not evidence for the current E2E notebook |
+| 2026-09-17 | `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` / `c5d97244af45b6522695ba5700a0bb1182edeebb` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v2) | Earlier E2E carrier | Passed 11/11 cells, 36 optimizer steps, and reload equivalence, but the target depth bypassed the processor padding geometry; retained as workflow history only |
 
 ## Current status
 
-The E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob before execution, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the output hashes under `verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+The corrected E2E implementation and generated carrier remain **Candidate**, and the clean-runtime gate is open. Requalification must verify the exact corrected notebook blob, a clean Hugging Face cache, the declared pins, the digest-bound base snapshot, all 11 code cells, nonzero gradient movement, held-out evaluation, and fresh reload equivalence. Synthetic held-out scores remain workflow evidence only and cannot establish quality improvement.

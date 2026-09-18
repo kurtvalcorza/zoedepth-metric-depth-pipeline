@@ -371,6 +371,46 @@ def validate_depth_dataset(records: Sequence[Mapping[str, Any]]) -> dict[str, An
     }
 
 
+def _depth_record_content_sha256(record: Mapping[str, Any]) -> str:
+    """Fingerprint one validated RGB/depth pair without trusting its caller-supplied ID."""
+    digest = hashlib.sha256()
+    digest.update(np.asarray(record["image"].convert("RGB"), dtype=np.uint8).tobytes())
+    digest.update(np.asarray(record["depth_m"], dtype=np.float32).tobytes())
+    return digest.hexdigest()
+
+
+def _prepare_depth_target(
+    depth_m: Any,
+    processor: Any,
+    *,
+    output_size: tuple[int, int],
+    device: Any,
+) -> Any:
+    """Apply ZoeDepth's spatial pad/resize geometry to a metric-depth target."""
+    import torch
+    import torch.nn.functional as F
+
+    depth = np.asarray(depth_m, dtype=np.float32)
+    if getattr(processor, "do_pad", False):
+        pad_image = getattr(processor, "pad_image", None)
+        if not callable(pad_image):
+            raise RuntimeError("ZoeDepth processor enables padding but exposes no pad_image method")
+        depth = np.asarray(
+            pad_image(
+                depth[..., None],
+                input_data_format="channels_last",
+                data_format="channels_last",
+            ),
+            dtype=np.float32,
+        )[..., 0]
+    target = torch.from_numpy(np.ascontiguousarray(depth)).to(device)
+    # ZoeDepth's image resize uses align_corners=True. Bilinear depth resampling preserves the same
+    # coordinate grid while avoiding image-specific bicubic overshoot in metric targets.
+    return F.interpolate(
+        target[None, None], size=output_size, mode="bilinear", align_corners=True
+    )[:, 0]
+
+
 @dataclass
 class ZoeDepthMetricPipeline:
     """Monocular metric depth estimation over the pinned ZoeDepth NYU+KITTI checkpoint."""
@@ -464,7 +504,6 @@ class ZoeDepthMetricPipeline:
         import random
 
         import torch
-        import torch.nn.functional as F
         from torch.optim import AdamW
 
         if self.model is None or self.processor is None:
@@ -477,6 +516,18 @@ class ZoeDepthMetricPipeline:
             raise ValueError("learning_rate must be in (0, 1e-2]")
         train_manifest = validate_depth_dataset(train_records)
         val_manifest = validate_depth_dataset(val_records) if val_records else None
+        if val_records:
+            train_ids = {str(record["id"]) for record in train_records}
+            val_ids = {str(record["id"]) for record in val_records}
+            overlapping_ids = sorted(train_ids & val_ids)
+            if overlapping_ids:
+                raise ValueError(
+                    f"train and validation records overlap by id: {overlapping_ids[:5]}"
+                )
+            train_content = {_depth_record_content_sha256(record) for record in train_records}
+            val_content = {_depth_record_content_sha256(record) for record in val_records}
+            if train_content & val_content:
+                raise ValueError("train and validation records overlap by RGB/depth content")
         if not self.adaptation_config:
             self.freeze_for_adaptation()
         if any(
@@ -502,10 +553,12 @@ class ZoeDepthMetricPipeline:
         def loss_for(record: Mapping[str, Any]) -> torch.Tensor:
             inputs = self.processor(images=record["image"], return_tensors="pt").to(device)
             prediction = self.model(pixel_values=inputs["pixel_values"]).predicted_depth
-            target = torch.from_numpy(np.asarray(record["depth_m"], dtype=np.float32)).to(device)
-            target = F.interpolate(
-                target[None, None], size=prediction.shape[-2:], mode="bilinear", align_corners=False
-            )[:, 0]
+            target = _prepare_depth_target(
+                record["depth_m"],
+                self.processor,
+                output_size=tuple(prediction.shape[-2:]),
+                device=device,
+            )
             return torch.mean(torch.abs(torch.log(prediction.clamp_min(1e-3)) - torch.log(target)))
 
         def validation_loss() -> float | None:
