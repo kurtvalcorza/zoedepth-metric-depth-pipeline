@@ -194,7 +194,7 @@ TEMPLATE = {
             "md": "## 8. Evaluate the adapted model\n\nEvaluate the same untouched holdout against the training-median baseline. Lower AbsRel and higher δ1 are better, but generated-scene values remain sample-sanity.",
             "code": (
                 "adapted_eval = pipe.evaluate_adaptation(val_records)\n"
-                "evaluation_report_e2e = {{'task': 'monocular-metric-depth-adaptation', 'verdict': 'sample-sanity', 'estimation': 'fixed generated held-out split', 'baseline_pretrained': base_eval, 'adapted': adapted_eval, 'weight_delta_l2': pipe.adaptation_config['weight_delta_l2']}}\n"
+                "evaluation_report_e2e = {{'task': 'monocular-metric-depth-adaptation', 'verdict': 'sample-sanity', 'estimation': f'fixed {{dataset_kind}} held-out split', 'baseline_pretrained': base_eval, 'adapted': adapted_eval, 'weight_delta_l2': pipe.adaptation_config['weight_delta_l2']}}\n"
                 "with open('outputs/{stem}_evaluation_report.json', 'w', encoding='utf-8') as handle:\n"
                 "    json.dump(evaluation_report_e2e, handle, indent=2)\n"
                 "print(json.dumps(evaluation_report_e2e, indent=2))"

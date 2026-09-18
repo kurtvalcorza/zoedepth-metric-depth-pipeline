@@ -32,6 +32,7 @@ ARTIFACT_FORMAT = "org.valcorza.zoedepth.metric-head-adapter"
 ARTIFACT_FORMAT_VERSION = "1.0"
 ARTIFACT_MANIFEST_NAME = "manifest.json"
 ARTIFACT_WEIGHTS_NAME = "adapter.safetensors"
+MAX_ARTIFACT_MANIFEST_BYTES = 64 * 1024
 MAX_ARTIFACT_HEADER_BYTES = 1024 * 1024
 TRAINABLE_PREFIXES = ("metric_head.",)
 MAX_ADAPTATION_RECORDS = 128
@@ -843,6 +844,8 @@ class ZoeDepthMetricPipeline:
                 f"artifact directory must contain exactly {sorted(expected_files)}, "
                 f"found {sorted(actual_entries)}"
             )
+        if manifest_path.stat().st_size > MAX_ARTIFACT_MANIFEST_BYTES:
+            raise ValueError("artifact manifest exceeds the permitted size")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("format") != ARTIFACT_FORMAT:
             raise ValueError(f"unrecognized artifact format: {manifest.get('format')}")

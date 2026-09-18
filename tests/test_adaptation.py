@@ -12,6 +12,7 @@ import zoedepth_metric_depth_pipeline.pipeline as pipeline_module
 from zoedepth_metric_depth_pipeline.pipeline import (
     ARTIFACT_MANIFEST_NAME,
     ARTIFACT_WEIGHTS_NAME,
+    MAX_ARTIFACT_MANIFEST_BYTES,
     ZoeDepthMetricPipeline,
     _prepare_depth_target,
     validate_depth_dataset,
@@ -278,6 +279,25 @@ def test_artifact_rejects_oversized_serialization_before_loading(tmp_path):
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     with pytest.raises(ValueError, match="serialized size"):
+        _pipeline().load_artifact(artifact)
+
+
+def test_artifact_rejects_oversized_manifest_before_decoding(tmp_path):
+    source = _pipeline()
+    source.freeze_for_adaptation()
+    source.adaptation_config.update(
+        {
+            "weight_delta_l2": 1.0,
+            "training_median_depth_m": 2.0,
+            "history": [{"epoch": 1}],
+        }
+    )
+    artifact = source.save_artifact(tmp_path / "artifact", producer_revision="d" * 40)
+    (artifact / ARTIFACT_MANIFEST_NAME).write_bytes(
+        b" " * (MAX_ARTIFACT_MANIFEST_BYTES + 1)
+    )
+
+    with pytest.raises(ValueError, match="manifest exceeds"):
         _pipeline().load_artifact(artifact)
 
 
