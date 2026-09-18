@@ -8,6 +8,7 @@ import pytest
 import torch
 from PIL import Image
 
+import zoedepth_metric_depth_pipeline.pipeline as pipeline_module
 from zoedepth_metric_depth_pipeline.pipeline import (
     ARTIFACT_MANIFEST_NAME,
     ARTIFACT_WEIGHTS_NAME,
@@ -92,6 +93,10 @@ def test_finetune_updates_only_metric_head():
     assert history[0]["optimizer_steps"] == 2
     assert not torch.equal(before, after)
     assert pipeline.adaptation_config["weight_delta_l2"] > 0
+    assert pipeline.adaptation_config["optimizer"] == "AdamW"
+    assert pipeline.adaptation_config["optimizer_betas"] == [0.9, 0.999]
+    assert pipeline.adaptation_config["optimizer_epsilon"] == 1e-8
+    assert pipeline.adaptation_config["optimizer_weight_decay"] == 0.01
 
 
 def test_finetune_rejects_train_validation_overlap_by_id_or_content():
@@ -100,8 +105,80 @@ def test_finetune_rejects_train_validation_overlap_by_id_or_content():
         _pipeline().finetune(records[:2], records[1:3], epochs=1)
 
     renamed = dict(records[0], id="renamed-depth")
-    with pytest.raises(ValueError, match="overlap by RGB/depth content"):
+    with pytest.raises(ValueError, match="overlap by RGB content"):
         _pipeline().finetune(records[:2], [renamed, records[2]], epochs=1)
+
+    recalibrated = dict(
+        records[0],
+        id="recalibrated-depth",
+        depth_m=records[0]["depth_m"] + 0.1,
+    )
+    with pytest.raises(ValueError, match="overlap by RGB content"):
+        _pipeline().finetune(records[:2], [recalibrated, records[2]], epochs=1)
+
+
+def test_finetune_converts_validated_images_to_rgb():
+    records = [dict(record, image=record["image"].convert("L")) for record in _records()[:2]]
+    pipeline = _pipeline()
+    pipeline.freeze_for_adaptation()
+    history = pipeline.finetune(records, epochs=1, learning_rate=1e-2)
+    assert history[0]["optimizer_steps"] == 2
+
+
+def test_failed_retraining_restores_weights_and_metadata(monkeypatch):
+    pipeline = _pipeline()
+    pipeline.freeze_for_adaptation()
+    pipeline.adaptation_config.update(
+        {
+            "weight_delta_l2": 1.0,
+            "training_median_depth_m": 2.0,
+            "history": [{"epoch": 1}],
+        }
+    )
+    previous_config = dict(pipeline.adaptation_config)
+    before = {
+        name: parameter.detach().clone()
+        for name, parameter in pipeline.model.named_parameters()
+        if parameter.requires_grad
+    }
+    original_forward = pipeline.model.forward
+
+    def non_finite_forward(*args, **kwargs):
+        outputs = original_forward(*args, **kwargs)
+        return SimpleNamespace(predicted_depth=outputs.predicted_depth * float("nan"))
+
+    monkeypatch.setattr(pipeline.model, "forward", non_finite_forward)
+    with pytest.raises(RuntimeError, match="non-finite loss"):
+        pipeline.finetune(_records()[:2], epochs=1, learning_rate=1e-2)
+    assert pipeline.adaptation_config == previous_config
+    for name, parameter in pipeline.model.named_parameters():
+        if name in before:
+            assert torch.equal(parameter, before[name])
+
+
+def test_dataset_validation_bounds_total_pixels(monkeypatch):
+    monkeypatch.setattr(pipeline_module, "MAX_ADAPTATION_PIXELS", 2_000)
+    with pytest.raises(ValueError, match="MAX_ADAPTATION_PIXELS"):
+        validate_depth_dataset(_records()[:2])
+
+
+def test_evaluation_weights_metrics_by_valid_pixels():
+    small = {
+        "id": "small",
+        "image": Image.new("RGB", (32, 32), "white"),
+        "depth_m": np.ones((32, 32), dtype=np.float32),
+    }
+    large = {
+        "id": "large",
+        "image": Image.new("RGB", (64, 64), "white"),
+        "depth_m": np.full((64, 64), 2.0, dtype=np.float32),
+    }
+    pipeline = _pipeline()
+    pipeline.adaptation_config["training_median_depth_m"] = 1.0
+    report = pipeline.evaluate_adaptation([small, large])
+    assert report["valid_pixels"] == 5_120
+    assert report["abs_rel"] == pytest.approx(0.4)
+    assert report["delta1"] == pytest.approx(0.2)
 
 
 def test_depth_target_uses_processor_padding_before_resize():
@@ -133,7 +210,13 @@ def test_depth_target_uses_processor_padding_before_resize():
 def test_artifact_round_trip_and_integrity_rejection(tmp_path):
     source = _pipeline()
     source.freeze_for_adaptation()
-    source.adaptation_config.update({"weight_delta_l2": 1.0, "training_median_depth_m": 2.0})
+    source.adaptation_config.update(
+        {
+            "weight_delta_l2": 1.0,
+            "training_median_depth_m": 2.0,
+            "history": [{"epoch": 1}],
+        }
+    )
     artifact = source.save_artifact(tmp_path / "artifact", producer_revision="b" * 40)
 
     fresh = _pipeline()
@@ -146,10 +229,32 @@ def test_artifact_round_trip_and_integrity_rejection(tmp_path):
         _pipeline().load_artifact(artifact)
     unexpected.unlink()
 
+    unexpected_dir = artifact / "retained-data"
+    unexpected_dir.mkdir()
+    with pytest.raises(ValueError, match="contain exactly"):
+        _pipeline().load_artifact(artifact)
+    unexpected_dir.rmdir()
+
     manifest_path = artifact / ARTIFACT_MANIFEST_NAME
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["adaptation"] = []
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    rejected = _pipeline()
+    before = rejected.model.metric_head.weight.detach().clone()
+    with pytest.raises(ValueError, match="adaptation metadata"):
+        rejected.load_artifact(artifact)
+    assert torch.equal(before, rejected.model.metric_head.weight)
+
+    manifest["adaptation"] = source.adaptation_config
     manifest["files"][0]["bytes"] += 1
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="size or SHA-256"):
         _pipeline().load_artifact(artifact)
     assert (artifact / ARTIFACT_WEIGHTS_NAME).is_file()
+
+
+def test_artifact_export_requires_completed_update(tmp_path):
+    pipeline = _pipeline()
+    pipeline.freeze_for_adaptation()
+    with pytest.raises(RuntimeError, match="completed finite fine-tuning"):
+        pipeline.save_artifact(tmp_path / "artifact", producer_revision="a" * 40)

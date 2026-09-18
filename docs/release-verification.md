@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `b1f91a13621959e7f41f72b4ab69cfda7ba62b28`, embedded source revision `e59149e41f93db06d7b67687be293d14ad0b9994`, and notebook blob `810883ed15211487e09faa6a6b6d5acbd811e339` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the corrected execution-evidence gate but does not itself perform reviewer/integrator promotion.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Review remediation changed the executable source after the v4 run, so a fresh exact-blob clean Kaggle T4 run is required. The v4 executor pass remains recorded below as historical workflow evidence but does not satisfy the gate for the corrected revision.
 
 ## Automatic coverage
 
@@ -32,7 +32,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 | Date (UTC) | Commit / notebook blob | Executor | Path | Outcome |
 |---|---|---|---|---|
-| 2026-09-18 | `b1f91a13621959e7f41f72b4ab69cfda7ba62b28` / `810883ed15211487e09faa6a6b6d5acbd811e339` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v4) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 254.6 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; corrected target alignment; held-out AbsRel 0.431096 → 0.466203 and delta1 0.211222 → 0.212009; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
+| Awaiting rerun | Corrected review-remediation commit/blob to be recorded | Kaggle T4 | Default generated dataset | Required before promotion |
 
 ### Local E2E pre-flight (not promotion evidence)
 
@@ -46,7 +46,8 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 |---|---|---|---|---|
 | 2026-09-14 | `4cd28d1` / `3bcf19a2b16e` | Kaggle CPU | Earlier inference-only carrier | Passed its prior 8-cell path; it is not evidence for the current E2E notebook |
 | 2026-09-17 | `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` / `c5d97244af45b6522695ba5700a0bb1182edeebb` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v2) | Earlier E2E carrier | Passed 11/11 cells, 36 optimizer steps, and reload equivalence, but the target depth bypassed the processor padding geometry; retained as workflow history only |
+| 2026-09-18 | `b1f91a13621959e7f41f72b4ab69cfda7ba62b28` / `810883ed15211487e09faa6a6b6d5acbd811e339` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v4) | Superseded E2E carrier | Passed 11/11 cells and reload, but subsequent review found nine data-boundary, metric-aggregation, artifact, and provenance defects; retained as workflow history only |
 
 ## Current status
 
-The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v4 output hashes under `verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+The corrected E2E implementation and generated carrier remain **Candidate**, and the clean-runtime gate is open. Requalification must verify the exact corrected notebook blob, a clean Hugging Face cache, the declared pins, the digest-bound base snapshot, all 11 code cells, bounded input memory, finite gradient movement, pixel-weighted held-out evaluation, and fresh reload equivalence. Synthetic held-out scores remain workflow evidence only and cannot establish quality improvement.

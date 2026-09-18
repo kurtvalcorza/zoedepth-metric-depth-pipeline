@@ -43,7 +43,9 @@ EXPECTED_OUTPUTS = (
 CODE_MARKERS = (
     "train_manifest = validate_depth_dataset(train_records)",
     "val_manifest = validate_depth_dataset(val_records)",
+    "if short_side < MIN_IMAGE_SIDE or long_side > MAX_IMAGE_SIDE",
     "base_eval = score_records(pipe, val_records, training_median)",
+    "model_abs_sum / valid_pixels",
     "parameter_counts = pipe.freeze_for_adaptation()",
     "history = pipe.finetune(train_records, val_records, epochs=2, learning_rate=1e-5, seed=42)",
     "target = _prepare_depth_target(",
