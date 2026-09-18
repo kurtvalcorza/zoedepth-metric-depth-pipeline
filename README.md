@@ -59,7 +59,7 @@ No `pytorch_model.bin` exists upstream at this revision; SafeTensors is the only
 
 ## Release status
 
-**Candidate.** Exact carrier commit `cd2abb1` and notebook blob `6afc6e78ca16` passed an 11/11-cell clean Kaggle T4 `Run all` for the review-hardened adapter and BYOD path. The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
+**Candidate.** Exact carrier commit `8db7fe8` and notebook blob `e9f6ab0fe136` passed an 11/11-cell clean Kaggle T4 `Run all` for the review-hardened adapter and BYOD path. The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
 
 ## Documentation
 
