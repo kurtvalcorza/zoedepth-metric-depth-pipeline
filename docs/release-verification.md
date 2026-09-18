@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `8db7fe8d8f955d370291a1aa568a92de167e1b6c`, embedded source revision `71a2ee3ef019dc3da3730a62e0b0906608391493`, and notebook blob `e9f6ab0fe13622dd9ea3ad58a110d36ede7a2d6c` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the corrected execution-evidence gate but does not itself perform reviewer/integrator promotion.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `ac175a534c57a9d9ddd7dc4bad282bc99f56051c`, embedded source revision `f0cedd2892eebaf99e6b598aa60cecf669ba50f4`, and notebook blob `3d3254ea89e196d9f0bd484da8a59275ac5589e4` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the corrected execution-evidence gate but does not itself perform reviewer/integrator promotion.
 
 ## Automatic coverage
 
@@ -32,7 +32,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 | Date (UTC) | Commit / notebook blob | Executor | Path | Outcome |
 |---|---|---|---|---|
-| 2026-09-18 | `8db7fe8d8f955d370291a1aa568a92de167e1b6c` / `e9f6ab0fe13622dd9ea3ad58a110d36ede7a2d6c` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v8) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 283.4 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; pixel-weighted held-out AbsRel 0.431096 → 0.466203 and delta1 0.211222 → 0.212009; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
+| 2026-09-18 | `ac175a534c57a9d9ddd7dc4bad282bc99f56051c` / `3d3254ea89e196d9f0bd484da8a59275ac5589e4` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v9) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 265.5 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; pixel-weighted held-out AbsRel 0.431096 → 0.466203 and delta1 0.211222 → 0.212009; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
 
 ### Local E2E pre-flight (not promotion evidence)
 
@@ -50,7 +50,8 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 | 2026-09-18 | `1cfd4977d330cc04de628d6bc327e577d1228ccc` / `0e4c86304b1102dda3d30900eb32e94e585b0768` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v5) | Superseded E2E carrier | Passed 11/11 cells and reload, but final review found BYOD archive, adapter-size, and reload-to-refine defects; retained as workflow history only |
 | 2026-09-18 | `2dc73837422b0751fea79414f3de71f61ac800ec` / `ee943c717635036ae64974e38ae15c71aecd8fb0` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v6) | Provenance-rejected E2E carrier | Passed 11/11 cells and reload, but the notebook still labelled its embedded source as `f11c579`; retained as workflow history only |
 | 2026-09-18 | `cd2abb1e780e7707210b33dc2d5369157a4060db` / `6afc6e78ca16fa49803e8cc37e83a26e19759dce` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v7) | Superseded E2E carrier | Passed 11/11 cells and reload, but final review found manifest-size, evidence-index, variability-guidance, and BYOD-report provenance gaps; retained as workflow history only |
+| 2026-09-18 | `8db7fe8d8f955d370291a1aa568a92de167e1b6c` / `e9f6ab0fe13622dd9ea3ad58a110d36ede7a2d6c` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v8) | Superseded E2E carrier | Passed 11/11 cells and reload, but final review found adaptation-wide and BYOD cumulative resource ceilings plus stale model-card evidence; retained as workflow history only |
 
 ## Current status
 
-The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v8 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
