@@ -6,7 +6,7 @@ Notebook specification: **DIMER Notebook Specification 2.0**. The notebook is a 
 
 | Notebook | Profile | Mode | Carrier | Default E2E path | Runtime | BYOD | Release status |
 |---|---|---|---|---|---|---|---|
-| `zoedepth_metric_depth_colab.ipynb` | `E2E` | `GUIDED` | standalone (generated) | 24 deterministic RGB/metric-depth scenes; 18/6 train/held-out split; pinned pretrained and constant-median baselines; two real gradient epochs on the metric head; held-out `abs_rel` and `delta1`; unseen-scene prediction; SafeTensors adapter export; fresh pinned-base reload equivalence | CUDA required; Colab T4 or Kaggle T4 supported | ZIP containing paired `images/` and `depth/*.npy` files, off by default | **Candidate** — fresh exact-blob clean Kaggle T4 execution is required after the target-alignment correction; see `../docs/release-verification.md` |
+| `zoedepth_metric_depth_colab.ipynb` | `E2E` | `GUIDED` | standalone (generated) | 24 deterministic RGB/metric-depth scenes; 18/6 train/held-out split; pinned pretrained and constant-median baselines; two real gradient epochs on the metric head; held-out `abs_rel` and `delta1`; unseen-scene prediction; SafeTensors adapter export; fresh pinned-base reload equivalence | CUDA required; Colab T4 or Kaggle T4 supported | ZIP containing paired `images/` and `depth/*.npy` files, off by default | **Candidate** — corrected 11/11-cell exact-blob clean Kaggle T4 execution is recorded in `../docs/release-verification.md`; awaiting reviewer/integrator promotion |
 
 ## Conformance notes
 

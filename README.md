@@ -59,7 +59,7 @@ No `pytorch_model.bin` exists upstream at this revision; SafeTensors is the only
 
 ## Release status
 
-**Candidate.** The corrected depth-target alignment invalidates the earlier exact-blob qualification for the current carrier. A fresh 11-cell Kaggle T4 `Run all` is required and will be recorded in `docs/release-verification.md` before reviewer/integrator promotion.
+**Candidate.** Exact carrier commit `b1f91a1` and notebook blob `810883ed1521` passed an 11/11-cell clean Kaggle T4 `Run all` with corrected depth-target alignment. The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
 
 ## Documentation
 

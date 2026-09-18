@@ -1,0 +1,216 @@
+{
+ "identity": {
+  "repository": "zoedepth-metric-depth-pipeline",
+  "candidate_sha": "b1f91a13621959e7f41f72b4ab69cfda7ba62b28",
+  "notebook": "tutorials/zoedepth_metric_depth_colab.ipynb",
+  "committed_blob": "810883ed15211487e09faa6a6b6d5acbd811e339",
+  "fetched_blob_verified": true,
+  "kaggle_docker_image": "gcr.io/kaggle-gpu-images/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+  "kaggle_run_type": "Batch",
+  "os": "Linux-6.12.90+-x86_64-with-glibc2.35",
+  "python": "3.12.13",
+  "cpu_count": 4,
+  "image_versions_before_run": {
+   "torch": "2.10.0+cu128",
+   "numpy": "2.0.2",
+   "transformers": "5.0.0",
+   "tokenizers": "0.22.2",
+   "safetensors": "0.7.0",
+   "huggingface-hub": "1.11.0",
+   "pillow": "11.3.0",
+   "nbclient": "0.10.2",
+   "ipykernel": "6.17.1"
+  },
+  "started": "2026-09-18T00:38:03Z",
+  "nvidia_smi": "Tesla T4, 15360 MiB, 580.159.04\nTesla T4, 15360 MiB, 580.159.04",
+  "hf_cache_clean_at_start": true
+ },
+ "runner": {
+  "ok": true,
+  "started": "2026-09-18T00:38:04Z",
+  "passes": [
+   {
+    "attempt": 1,
+    "started": "2026-09-18T00:38:04Z",
+    "ok": false,
+    "error": "CellExecutionError: ━━━━ 42.5/42.5 MB 46.9 MB/s eta 0:00:00\n----- stderr -----\nERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\nbigframes 2.39.0 requires google-cloud-bigquery-storage<3.0.0,>=2.30.0, which is not installed.\nydata-profiling 4.18.4 requires numpy<2.4,>=1.22, but you have numpy 2.5.3 which is incompatible.\ngoogle-colab 1.0.0 requires jupyter-server==2.14.0, but you have jupyter-server 2.12.5 which is incompatible.\ngoogle-colab 1.0.0 requires pandas==2.2.2, but you have pandas 2.3.3 which is incompatible.\ndopamine-rl 4.1.2 requires gym<=0.25.2, but you have gym 0.26.2 which is incompatible.\nmoviepy 1.0.3 requires decorator<5.0,>=4.0.2, but you have decorator 5.3.1 which is incompatible.\nlibcuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuda-python 12.9.4 requires cuda-bindings~=12.9.4, but you have cuda-bindings 13.4.2 which is incompatible.\ncudf-cu12 26.2.1 requires cuda-toolkit[nvcc,nvrtc]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nnumba 0.60.0 requires numpy<2.1,>=1.22, but you have numpy 2.5.3 which is incompatible.\nlibcuvs-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nlibraft-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\n------------------\n\n\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\n\u001b[0;32m/tmp/ipykernel_52/109563014.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     48\u001b[0m             \u001b[0mstale\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mappend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mf'{distribution}: loaded={before}, installed={installed}'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     49\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mstale\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 50\u001b[0;31m         \u001b[0;32mraise\u001b[0m \u001b[0mRuntimeError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'Core dependencies changed while older modules were loaded: '\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'; '\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjoin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstale\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'. Restart the runtime, then rerun from the top.'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     51\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     52\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mtorch\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtransformers\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msafetensors\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\n\u001b[0;31mRuntimeError\u001b[0m: Core dependencies changed while older modules were loaded: cuda-bindings: loaded=12.9.4, installed=13.4.2; numpy: loaded=2.0.2, installed=2.5.3. Restart the runtime, then rerun from the top.\n",
+    "wall_s": 167.5
+   },
+   {
+    "attempt": 2,
+    "started": "2026-09-18T00:40:52Z",
+    "ok": true,
+    "wall_s": 87.1
+   }
+  ],
+  "error": "CellExecutionError: ━━━━ 42.5/42.5 MB 46.9 MB/s eta 0:00:00\n----- stderr -----\nERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\nbigframes 2.39.0 requires google-cloud-bigquery-storage<3.0.0,>=2.30.0, which is not installed.\nydata-profiling 4.18.4 requires numpy<2.4,>=1.22, but you have numpy 2.5.3 which is incompatible.\ngoogle-colab 1.0.0 requires jupyter-server==2.14.0, but you have jupyter-server 2.12.5 which is incompatible.\ngoogle-colab 1.0.0 requires pandas==2.2.2, but you have pandas 2.3.3 which is incompatible.\ndopamine-rl 4.1.2 requires gym<=0.25.2, but you have gym 0.26.2 which is incompatible.\nmoviepy 1.0.3 requires decorator<5.0,>=4.0.2, but you have decorator 5.3.1 which is incompatible.\nlibcuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuda-python 12.9.4 requires cuda-bindings~=12.9.4, but you have cuda-bindings 13.4.2 which is incompatible.\ncudf-cu12 26.2.1 requires cuda-toolkit[nvcc,nvrtc]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nnumba 0.60.0 requires numpy<2.1,>=1.22, but you have numpy 2.5.3 which is incompatible.\nlibcuvs-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nlibraft-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\n------------------\n\n\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\n\u001b[0;32m/tmp/ipykernel_52/109563014.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     48\u001b[0m             \u001b[0mstale\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mappend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mf'{distribution}: loaded={before}, installed={installed}'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     49\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mstale\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 50\u001b[0;31m         \u001b[0;32mraise\u001b[0m \u001b[0mRuntimeError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'Core dependencies changed while older modules were loaded: '\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'; '\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjoin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstale\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'. Restart the runtime, then rerun from the top.'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     51\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     52\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mtorch\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtransformers\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msafetensors\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\n\u001b[0;31mRuntimeError\u001b[0m: Core dependencies changed while older modules were loaded: cuda-bindings: loaded=12.9.4, installed=13.4.2; numpy: loaded=2.0.2, installed=2.5.3. Restart the runtime, then rerun from the top.\n",
+  "traceback": " 10.7/10.7 MB 114.2 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.2/90.2 MB 21.2 MB/s eta 0:00:00\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 80.0 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 214.1/214.1 MB 3.8 MB/s eta 0:00:00\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 58.8 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.5/59.5 MB 32.6 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 200.9/200.9 MB 8.1 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 145.9/145.9 MB 6.3 MB/s eta 0:00:00\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 148.0/148.0 kB 9.3 MB/s eta 0:00:00\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.2/7.2 MB 102.6 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.0/248.0 MB 7.5 MB/s eta 0:00:00\n----- stdout -----\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 42.5/42.5 MB 46.9 MB/s eta 0:00:00\n----- stderr -----\nERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\nbigframes 2.39.0 requires google-cloud-bigquery-storage<3.0.0,>=2.30.0, which is not installed.\nydata-profiling 4.18.4 requires numpy<2.4,>=1.22, but you have numpy 2.5.3 which is incompatible.\ngoogle-colab 1.0.0 requires jupyter-server==2.14.0, but you have jupyter-server 2.12.5 which is incompatible.\ngoogle-colab 1.0.0 requires pandas==2.2.2, but you have pandas 2.3.3 which is incompatible.\ndopamine-rl 4.1.2 requires gym<=0.25.2, but you have gym 0.26.2 which is incompatible.\nmoviepy 1.0.3 requires decorator<5.0,>=4.0.2, but you have decorator 5.3.1 which is incompatible.\nlibcuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuml-cu12 26.2.0 requires cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\ncuda-python 12.9.4 requires cuda-bindings~=12.9.4, but you have cuda-bindings 13.4.2 which is incompatible.\ncudf-cu12 26.2.1 requires cuda-toolkit[nvcc,nvrtc]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nnumba 0.60.0 requires numpy<2.1,>=1.22, but you have numpy 2.5.3 which is incompatible.\nlibcuvs-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\nlibraft-cu12 26.2.0 requires cuda-toolkit[cublas,curand,cusolver,cusparse]==12.*, but you have cuda-toolkit 13.0.3.0 which is incompatible.\n------------------\n\n\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\n\u001b[0;32m/tmp/ipykernel_52/109563014.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     48\u001b[0m             \u001b[0mstale\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mappend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mf'{distribution}: loaded={before}, installed={installed}'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     49\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mstale\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 50\u001b[0;31m         \u001b[0;32mraise\u001b[0m \u001b[0mRuntimeError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'Core dependencies changed while older modules were loaded: '\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'; '\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjoin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstale\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m'. Restart the runtime, then rerun from the top.'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     51\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     52\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mtorch\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtransformers\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msafetensors\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\n\u001b[0;31mRuntimeError\u001b[0m: Core dependencies changed while older modules were loaded: cuda-bindings: loaded=12.9.4, installed=13.4.2; numpy: loaded=2.0.2, installed=2.5.3. Restart the runtime, then rerun from the top.\n\n",
+  "restarted_after_install_cell": true,
+  "wall_s": 254.6,
+  "finished": "2026-09-18T00:42:19Z"
+ },
+ "cells": [
+  {
+   "cell": 3,
+   "status": "ok",
+   "started": "2026-09-18T00:40:53.806571Z",
+   "ended": "2026-09-18T00:41:08.501646Z",
+   "stdout_tail": "{'notebook_source': {'repository': 'zoedepth-metric-depth-pipeline', 'repository_revision': 'e59149e41f93db06d7b67687be293d14ad0b9994', 'embedded_module': 'src/zoedepth_metric_depth_pipeline/pipeline.py', 'embedded_modules': ['src/zoedepth_metric_depth_pipeline/pipeline.py'], 'module_sha256': 'f56da93b5af18cfe3388b5c1ca334302fdad0ffdb62cfef56c52e926fe78f68f', 'generator': 'build_notebook.py/2', 'notebook_spec': '2.0'}, 'python': '3.12.13', 'torch': '2.14.0+cu130', 'transformers': '4.57.6', 'safetensors': '0.8.0', 'cuda': True}\n",
+   "error": null
+  },
+  {
+   "cell": 5,
+   "status": "ok",
+   "started": "2026-09-18T00:41:08.506739Z",
+   "ended": "2026-09-18T00:41:08.584102Z",
+   "stdout_tail": "",
+   "error": null
+  },
+  {
+   "cell": 7,
+   "status": "ok",
+   "started": "2026-09-18T00:41:08.587572Z",
+   "ended": "2026-09-18T00:41:45.759632Z",
+   "stdout_tail": "{'model_id': 'Intel/zoedepth-nyu-kitti', 'revision': 'f364d4c7936e91f465abba182208dd68142bf0ca', 'license': 'mit', 'files': 4, 'total_bytes': 1380379860}\nREADME.md: 0.00B [00:00, ?B/s]config.json: 0.00B [00:00, ?B/s]model.safetensors:   0%|          | 0.00/1.38G [00:00<?, ?B/s]preprocessor_config.json:   0%|          | 0.00/723 [00:00<?, ?B/s]{'weights_dir': '/content/weights/zoedepth-nyu-kitti', 'fetched': ['README.md', 'config.json', 'model.safetensors', 'preprocessor_config.json']}\n{'verified_files': 4, 'revision': 'f364d4c7936e91f465abba182208dd68142bf0ca'}\n/usr/local/lib/python3.12/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.\n  warnings.warn(\n{'device': 'cuda:0', 'source': 'local-snapshot'}\n",
+   "error": null
+  },
+  {
+   "cell": 9,
+   "status": "ok",
+   "started": "2026-09-18T00:41:45.763727Z",
+   "ended": "2026-09-18T00:41:45.799290Z",
+   "stdout_tail": "{'dataset_kind': 'generated', 'records': 24, 'train': 18, 'held_out': 6}\n",
+   "error": null
+  },
+  {
+   "cell": 11,
+   "status": "ok",
+   "started": "2026-09-18T00:41:45.803774Z",
+   "ended": "2026-09-18T00:41:45.823512Z",
+   "stdout_tail": "{\n  \"kind\": \"generated\",\n  \"train\": {\n    \"records\": 18,\n    \"unique_ids\": 18,\n    \"valid_depth_pixels\": 221184,\n    \"depth_min_m\": 0.8117600083351135,\n    \"depth_max_m\": 4.2755045890808105,\n    \"depth_median_m\": 2.298952102661133,\n    \"dataset_sha256\": \"f3d238a9a844980b9417e81cb4f5133418bb351b111988b2e3c750f2fe6b16ac\",\n    \"verdict\": \"accepted\"\n  },\n  \"validation\": {\n    \"records\": 6,\n    \"unique_ids\": 6,\n    \"valid_depth_pixels\": 73728,\n    \"depth_min_m\": 0.7304480671882629,\n    \"depth_max_m\": 4.37999963760376,\n    \"depth_median_m\": 2.1335408687591553,\n    \"dataset_sha256\": \"8786008a16072722abc9f7ba4e6fd32cc87796d17d896aef312552585f5273ac\",\n    \"verdict\": \"accepted\"\n  },\n  \"overlap_ids\": []\n}\n",
+   "error": null
+  },
+  {
+   "cell": 13,
+   "status": "ok",
+   "started": "2026-09-18T00:41:45.826688Z",
+   "ended": "2026-09-18T00:41:48.601383Z",
+   "stdout_tail": "{\n  \"records\": 6,\n  \"abs_rel\": 0.43109577191824416,\n  \"delta1\": 0.21122233072916666,\n  \"constant_median_baseline_abs_rel\": 0.4526053922821105,\n  \"constant_median_baseline_delta1\": 0.25775824652777773\n}\n",
+   "error": null
+  },
+  {
+   "cell": 15,
+   "status": "ok",
+   "started": "2026-09-18T00:41:48.605504Z",
+   "ended": "2026-09-18T00:42:08.993791Z",
+   "stdout_tail": "{'parameters': {'trainable_parameters': 1761754, 'frozen_parameters': 343311553}, 'history': [{'epoch': 1, 'train_log_l1': 0.422784, 'optimizer_steps': 18, 'val_log_l1': 0.428735}, {'epoch': 2, 'train_log_l1': 0.418089, 'optimizer_steps': 18, 'val_log_l1': 0.425855}], 'weight_delta_l2': 0.09880048824010805}\n",
+   "error": null
+  },
+  {
+   "cell": 17,
+   "status": "ok",
+   "started": "2026-09-18T00:42:08.998109Z",
+   "ended": "2026-09-18T00:42:10.998003Z",
+   "stdout_tail": "{\n  \"task\": \"monocular-metric-depth-adaptation\",\n  \"verdict\": \"sample-sanity\",\n  \"estimation\": \"fixed generated held-out split\",\n  \"baseline_pretrained\": {\n    \"records\": 6,\n    \"abs_rel\": 0.43109577191824416,\n    \"delta1\": 0.21122233072916666,\n    \"constant_median_baseline_abs_rel\": 0.4526053922821105,\n    \"constant_median_baseline_delta1\": 0.25775824652777773\n  },\n  \"adapted\": {\n    \"records\": 6,\n    \"abs_rel\": 0.4662034112995412,\n    \"delta1\": 0.21200900607638887,\n    \"constant_median_baseline_abs_rel\": 0.4526053922821105,\n    \"constant_median_baseline_delta1\": 0.25775824652777773,\n    \"abs_rel_delta_vs_baseline\": 0.013598019017430685,\n    \"delta1_delta_vs_baseline\": -0.04574924045138887\n  },\n  \"weight_delta_l2\": 0.09880048824010805\n}\n",
+   "error": null
+  },
+  {
+   "cell": 19,
+   "status": "ok",
+   "started": "2026-09-18T00:42:11.001770Z",
+   "ended": "2026-09-18T00:42:11.353047Z",
+   "stdout_tail": "{'id': 'generated-depth-24', 'abs_rel_sample_sanity': 0.43371197832346153, 'delta1_sample_sanity': 0.21500651041666666, 'depth_range_m': [1.9764126539230347, 2.3616678714752197]}\n",
+   "error": null
+  },
+  {
+   "cell": 21,
+   "status": "ok",
+   "started": "2026-09-18T00:42:11.357019Z",
+   "ended": "2026-09-18T00:42:16.421657Z",
+   "stdout_tail": "{'verification': 'PASSED', 'rtol': 1e-05, 'atol': 1e-05, 'max_abs_diff': 0.0, 'artifact_dir': 'outputs/zoedepth-metric-head-adapter-v1'}\n",
+   "error": null
+  },
+  {
+   "cell": 23,
+   "status": "ok",
+   "started": "2026-09-18T00:42:16.425805Z",
+   "ended": "2026-09-18T00:42:16.431634Z",
+   "stdout_tail": "{'status': 'E2E COMPLETE', 'train_records': 18, 'held_out_records': 6, 'optimizer_steps': 36, 'weight_delta_l2': 0.09880048824010805, 'reload': 'PASSED', 'outputs': ['zoedepth-metric-head-adapter-v1', 'zoedepth_metric_depth_dataset_manifest.json', 'zoedepth_metric_depth_evaluation_report.json', 'zoedepth_metric_depth_result.json', 'zoedepth_metric_depth_unseen_depth.npy']}\n",
+   "error": null
+  }
+ ],
+ "preserved_outputs": {
+  "zoedepth_metric_depth_dataset_manifest.json": {
+   "bytes": 703,
+   "sha256": "4a01bb35915e08486df2d1fdb0682364d157f6af959923d1beecaedaf9d4cb2b"
+  },
+  "zoedepth_metric_depth_evaluation_report.json": {
+   "bytes": 747,
+   "sha256": "d0ceec7db624956a25c3cb5c676b892d4950e4b59ab1f6e54d7f3b380c6c01ba"
+  },
+  "zoedepth_metric_depth_result.json": {
+   "bytes": 4215,
+   "sha256": "51d3c985799ee39075ab3c789747af08ec08259eecd4aa2519ba308873acd212"
+  },
+  "zoedepth_metric_depth_unseen_depth.npy": {
+   "bytes": 49280,
+   "sha256": "26639929607193cae286c0c3fc7956e1dbc5cae2778357b35c2ebe37fd474baa"
+  },
+  "zoedepth-metric-head-adapter-v1/adapter.safetensors": {
+   "bytes": 7064048,
+   "sha256": "a958f03752dadfc995cb8231558d291e22dedf48d9a74f30fd06858babff4ebf"
+  },
+  "zoedepth-metric-head-adapter-v1/manifest.json": {
+   "bytes": 2344,
+   "sha256": "1adaa6499e7e05f2fbb0168d494fef5b64b930199a52cfe89ae8c64ba6a5657f"
+  }
+ },
+ "staged_weights": [
+  {
+   "path": "zoedepth-nyu-kitti/README.md",
+   "bytes": 2508
+  },
+  {
+   "path": "zoedepth-nyu-kitti/config.json",
+   "bytes": 2225
+  },
+  {
+   "path": "zoedepth-nyu-kitti/dimer-base-manifest.json",
+   "bytes": 843
+  },
+  {
+   "path": "zoedepth-nyu-kitti/model.safetensors",
+   "bytes": 1380374404
+  },
+  {
+   "path": "zoedepth-nyu-kitti/preprocessor_config.json",
+   "bytes": 723
+  },
+  {
+   "path": "zoedepth-nyu-kitti/.cache/huggingface/.gitignore",
+   "bytes": 1
+  },
+  {
+   "path": "zoedepth-nyu-kitti/.cache/huggingface/download/README.md.metadata",
+   "bytes": 100
+  },
+  {
+   "path": "zoedepth-nyu-kitti/.cache/huggingface/download/config.json.metadata",
+   "bytes": 101
+  },
+  {
+   "path": "zoedepth-nyu-kitti/.cache/huggingface/download/model.safetensors.metadata",
+   "bytes": 125
+  },
+  {
+   "path": "zoedepth-nyu-kitti/.cache/huggingface/download/preprocessor_config.json.metadata",
+   "bytes": 101
+  }
+ ],
+ "executor_torch_after_run": {
+  "torch": "2.14.0+cu130",
+  "cuda": "13.0",
+  "device": "Tesla T4"
+ },
+ "finished": "2026-09-18T00:42:21Z"
+}
