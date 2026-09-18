@@ -222,6 +222,10 @@ def test_artifact_round_trip_and_integrity_rejection(tmp_path):
     fresh = _pipeline()
     fresh.load_artifact(artifact)
     assert torch.equal(source.model.metric_head.weight, fresh.model.metric_head.weight)
+    assert fresh.model.backbone.weight.requires_grad is False
+    assert fresh.model.metric_head.weight.requires_grad is True
+    history = fresh.finetune(_records()[:2], epochs=1, learning_rate=1e-2)
+    assert history[0]["optimizer_steps"] == 2
 
     unexpected = artifact / "unexpected.txt"
     unexpected.write_text("not declared", encoding="utf-8")
@@ -251,6 +255,30 @@ def test_artifact_round_trip_and_integrity_rejection(tmp_path):
     with pytest.raises(ValueError, match="size or SHA-256"):
         _pipeline().load_artifact(artifact)
     assert (artifact / ARTIFACT_WEIGHTS_NAME).is_file()
+
+
+def test_artifact_rejects_oversized_serialization_before_loading(tmp_path):
+    source = _pipeline()
+    source.freeze_for_adaptation()
+    source.adaptation_config.update(
+        {
+            "weight_delta_l2": 1.0,
+            "training_median_depth_m": 2.0,
+            "history": [{"epoch": 1}],
+        }
+    )
+    artifact = source.save_artifact(tmp_path / "artifact", producer_revision="c" * 40)
+    weights_path = artifact / ARTIFACT_WEIGHTS_NAME
+    with weights_path.open("ab") as stream:
+        stream.write(b"unexpected trailing allocation")
+    manifest_path = artifact / ARTIFACT_MANIFEST_NAME
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"][0]["bytes"] = weights_path.stat().st_size
+    manifest["files"][0]["sha256"] = pipeline_module._sha256(weights_path)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="serialized size"):
+        _pipeline().load_artifact(artifact)
 
 
 def test_artifact_export_requires_completed_update(tmp_path):

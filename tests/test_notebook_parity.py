@@ -73,6 +73,11 @@ def test_par1_rewrite_rules_are_the_only_difference() -> None:
         assert "__file__" not in replaced and "standalone rewrite" in replaced, replaced
 
 
+def test_byod_archive_limit_allows_the_public_record_ceiling() -> None:
+    source = "\n".join(cell.get("code", "") for cell in TEMPLATE["cells"])
+    assert "max_archive_entries = 2 * MAX_ADAPTATION_RECORDS + 2" in source
+
+
 def test_par2_inline_manifest_and_pins_match_repository(notebook: dict) -> None:
     code = "\n".join(_source(c) for c in _cells(notebook, "code"))
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

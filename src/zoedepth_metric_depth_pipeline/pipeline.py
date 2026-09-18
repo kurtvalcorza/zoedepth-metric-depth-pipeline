@@ -32,6 +32,7 @@ ARTIFACT_FORMAT = "org.valcorza.zoedepth.metric-head-adapter"
 ARTIFACT_FORMAT_VERSION = "1.0"
 ARTIFACT_MANIFEST_NAME = "manifest.json"
 ARTIFACT_WEIGHTS_NAME = "adapter.safetensors"
+MAX_ARTIFACT_HEADER_BYTES = 1024 * 1024
 TRAINABLE_PREFIXES = ("metric_head.",)
 MAX_ADAPTATION_RECORDS = 128
 MAX_ADAPTATION_PIXELS = 32 * 1024 * 1024
@@ -860,18 +861,36 @@ class ZoeDepthMetricPipeline:
         weights_path = root / ARTIFACT_WEIGHTS_NAME
         if not weights_path.is_file():
             raise FileNotFoundError(f"artifact weights not found: {weights_path}")
-        if weights_path.stat().st_size != entry.get("bytes") or _sha256(weights_path) != entry.get("sha256"):
+        weights_bytes = weights_path.stat().st_size
+        if weights_bytes != entry.get("bytes"):
             raise ValueError("artifact weights failed size or SHA-256 verification")
         adaptation = manifest.get("adaptation")
         if not isinstance(adaptation, dict):
             raise ValueError("artifact adaptation metadata must be a mapping")
-        state = load_file(str(weights_path), device=self.device)
-        expected = {
-            name for name in self.model.state_dict() if name.startswith(TRAINABLE_PREFIXES)
-        }
+        destination = self.model.state_dict()
+        expected = {name for name in destination if name.startswith(TRAINABLE_PREFIXES)}
+        expected_payload_bytes = sum(
+            destination[name].numel() * destination[name].element_size() for name in expected
+        )
+        with weights_path.open("rb") as stream:
+            header_prefix = stream.read(8)
+        if len(header_prefix) != 8:
+            raise ValueError("artifact weights do not contain a complete SafeTensors header")
+        header_bytes = int.from_bytes(header_prefix, byteorder="little", signed=False)
+        if not 0 < header_bytes <= MAX_ARTIFACT_HEADER_BYTES:
+            raise ValueError("artifact SafeTensors header exceeds the permitted size")
+        expected_serialized_bytes = 8 + header_bytes + expected_payload_bytes
+        if weights_bytes != expected_serialized_bytes:
+            raise ValueError(
+                "artifact serialized size does not match the declared adapter surface"
+            )
+        if _sha256(weights_path) != entry.get("sha256"):
+            raise ValueError("artifact weights failed size or SHA-256 verification")
+        # Materialize only after the closed inventory has imposed a tight serialized-size ceiling,
+        # and stage on CPU so an untrusted artifact cannot allocate directly into accelerator RAM.
+        state = load_file(str(weights_path), device="cpu")
         if set(state) != expected:
             raise ValueError("artifact tensor inventory does not match the declared adapter surface")
-        destination = self.model.state_dict()
         for name, tensor in state.items():
             expected_tensor = destination[name]
             if tensor.shape != expected_tensor.shape or tensor.dtype != expected_tensor.dtype:
@@ -882,6 +901,9 @@ class ZoeDepthMetricPipeline:
             if not bool(tensor.isfinite().all()):
                 raise ValueError(f"artifact tensor {name} contains non-finite values")
         self.model.load_state_dict(state, strict=False)
+        # A freshly constructed base model is fully trainable. Restore the declared adapter surface
+        # so a verified artifact can be fine-tuned again without exposing the backbone.
+        self.freeze_for_adaptation()
         self.model.to(self.device).eval()
         self.adaptation_config = dict(adaptation)
         return manifest
