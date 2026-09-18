@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Static validation, unit tests, and the local full-carrier pre-flight do not satisfy the runtime gate. Promotion requires the exact committed notebook blob to execute top-to-bottom in a clean supported CUDA runtime.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact commit `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` and notebook blob `c5d97244af45b6522695ba5700a0bb1182edeebb` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the execution-evidence gate but does not itself perform reviewer/integrator promotion.
 
 ## Automatic coverage
 
@@ -12,7 +12,7 @@ CI and the local validator must establish that:
 - the pinned pretrained model and constant training-median baseline run before real gradient adaptation;
 - only `metric_head.*` is trainable, its weights move, and held-out `abs_rel` plus `delta1` are recorded beside the baseline;
 - an unseen-scene prediction is exported, the adapter uses SafeTensors with a closed digest-bound manifest, and a fresh pinned base reload reproduces the depth map;
-- the status remains Candidate until supported-runtime evidence for the exact blob exists.
+- the status remains Candidate until the recorded exact-blob evidence is reviewed and an integrator promotes it.
 
 ## Supported execution procedure
 
@@ -32,7 +32,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 | Date (UTC) | Commit / notebook blob | Executor | Path | Outcome |
 |---|---|---|---|---|
-| Pending | Not committed | Colab or Kaggle CUDA | Default generated dataset | Candidate gate open; no exact-blob supported-runtime execution yet |
+| 2026-09-17 | `7bb7db6f401e7ffc9791d879949d56cc5fa9abaf` / `c5d97244af45b6522695ba5700a0bb1182edeebb` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v2) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 263.8 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; held-out AbsRel 0.431096 → 0.454204 and delta1 0.211222 → 0.211277; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
 
 ### Local E2E pre-flight (not promotion evidence)
 
@@ -48,4 +48,4 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 ## Current status
 
-The E2E implementation and generated carrier remain **Candidate**. The complete generated carrier passed locally on CUDA, but its interpreter differs from the declared pins, its synthetic held-out metrics do not show a quality improvement, and the current uncommitted notebook has no immutable blob identity. It therefore cannot receive qualifying clean-runtime evidence yet.
+The E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob before execution, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the output hashes under `verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.

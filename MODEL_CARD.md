@@ -65,7 +65,7 @@ The upstream "instruments" are a Microsoft Kinect (NYU: 640×480 RGB with struct
 
 ###### Environment
 
-The declared notebook environment is Python 3.12 with `torch==2.14.0`, `transformers==4.57.6`, and the exact pins in `pyproject.toml`. Historical inference timings were measured on CPU. The current E2E carrier also completed a local CUDA pre-flight on an RTX 5070 Ti Laptop GPU, but that run used Python 3.14.2, torch 2.11.0+cu128, and transformers 5.8.1, so it is compatibility evidence rather than release qualification. Cost is dominated by the BEiT-large pass at the processor's working resolution and grows with aspect ratio, not source pixel count. The model assumes a camera and scene like NYU or KITTI; other cameras, scene types, and non-photographic inputs are unmeasured, and the pipeline reports no distribution-shift signal.
+The declared notebook environment is Python 3.12 with `torch==2.14.0`, `transformers==4.57.6`, and the exact pins in `pyproject.toml`. Exact blob `c5d97244af45` completed clean-room execution on Kaggle Python 3.12.13 with PyTorch 2.14.0+cu130 and a Tesla T4; the full evidence is recorded under `docs/verification/2026-09-18-kaggle-t4/`. Cost is dominated by the BEiT-large pass at the processor's working resolution and grows with aspect ratio, not source pixel count. The model assumes a camera and scene like NYU or KITTI; other cameras, scene types, and non-photographic inputs are unmeasured, and the pipeline reports no distribution-shift signal.
 
 #### Metrics
 

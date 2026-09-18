@@ -1,0 +1,24 @@
+{
+  "kind": "generated",
+  "train": {
+    "records": 18,
+    "unique_ids": 18,
+    "valid_depth_pixels": 221184,
+    "depth_min_m": 0.8117600083351135,
+    "depth_max_m": 4.2755045890808105,
+    "depth_median_m": 2.298952102661133,
+    "dataset_sha256": "f3d238a9a844980b9417e81cb4f5133418bb351b111988b2e3c750f2fe6b16ac",
+    "verdict": "accepted"
+  },
+  "validation": {
+    "records": 6,
+    "unique_ids": 6,
+    "valid_depth_pixels": 73728,
+    "depth_min_m": 0.7304480671882629,
+    "depth_max_m": 4.37999963760376,
+    "depth_median_m": 2.1335408687591553,
+    "dataset_sha256": "8786008a16072722abc9f7ba4e6fd32cc87796d17d896aef312552585f5273ac",
+    "verdict": "accepted"
+  },
+  "overlap_ids": []
+}
