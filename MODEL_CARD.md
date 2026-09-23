@@ -40,7 +40,7 @@ The uses below are the ones the package was built to support; everything else is
 
 ###### Primary Intended Uses
 
-The task is monocular metric depth estimation: input one RGB image (`PIL.Image.Image`, any mode, converted to RGB) and an optional flip flag; output a float32 depth map in metres at the input resolution with its minimum, median and maximum. The optional adaptation task accepts 2–128 uniquely identified RGB records with exact-size finite positive metric-depth arrays capped at 80 m and a combined ceiling of 33,554,432 pixels, trains only the metric head, and requires a separate held-out split for evaluation. Within DIMER the pipeline is an inference component and bounded adaptation baseline for metric depth, not a rangefinder and not a certified sensor substitute.
+The task is monocular metric depth estimation: input one RGB image (`PIL.Image.Image`, any mode, converted to RGB) and an optional flip flag; output a float32 depth map in metres at the input resolution with its minimum, median and maximum. The optional adaptation task accepts 2–128 uniquely identified RGB records with exact-size finite positive metric-depth arrays capped at 80 m and a combined ceiling of 33,554,432 pixels, trains only the metric head, and requires a separate held-out split for evaluation. The pipeline is an inference component and bounded adaptation baseline for metric depth, not a rangefinder and not a certified sensor substitute.
 
 ###### Primary Intended Users
 
@@ -113,7 +113,7 @@ This pipeline is not intended for decisions in health, safety, criminal justice,
 
 ###### Use cases
 
-Prohibited even where the model would work: using the metres for collision avoidance, navigation, safety distances or any physical actuation without a real range sensor; dimensional measurement for construction, medical, insurance, forensic or legal purposes presented as measured; range-finding or tracking of people for surveillance; processing images the operator has no right to process, including intimate imagery and licence-restricted material; presenting estimated depth as measured depth or as evidence; and any use that violates the upstream MIT licence terms, the DIMER deployment terms, or the consent and data-protection obligations attached to the images processed. Autonomous high-consequence actions triggered by unreviewed depth estimates are prohibited by the intended-use contract above.
+Prohibited even where the model would work: using the metres for collision avoidance, navigation, safety distances or any physical actuation without a real range sensor; dimensional measurement for construction, medical, insurance, forensic or legal purposes presented as measured; range-finding or tracking of people for surveillance; processing images the operator has no right to process, including intimate imagery and licence-restricted material; presenting estimated depth as measured depth or as evidence; and any use that violates the upstream MIT licence terms, the terms of the deployment that runs the pipeline, or the consent and data-protection obligations attached to the images processed. Autonomous high-consequence actions triggered by unreviewed depth estimates are prohibited by the intended-use contract above.
 
 ## Immutable provenance
 
