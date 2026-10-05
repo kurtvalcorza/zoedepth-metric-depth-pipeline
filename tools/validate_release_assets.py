@@ -1,6 +1,6 @@
 """Static release-asset validation for the ZoeDepth metric depth DIMER pipeline.
 
-Checks the STANDALONE tutorial notebook (DIMER Notebook Specification 2.0 §4), the tutorial
+Checks the STANDALONE tutorial notebook (DIMER Notebook Specification 2.2 §4), the tutorial
 registry, model card, README, STATUS.md and weight documentation for source conformance and
 cross-document identity consistency, and runs the generator parity checks (PAR1–PAR3).
 
@@ -47,7 +47,18 @@ CODE_MARKERS = (
     "base_eval = score_records(pipe, val_records, training_median)",
     "model_abs_sum / valid_pixels",
     "parameter_counts = pipe.freeze_for_adaptation()",
-    "history = pipe.finetune(train_records, val_records, epochs=2, learning_rate=1e-5, seed=42)",
+    "history = pipe.finetune(train_records, val_records, epochs=EPOCHS, learning_rate=LEARNING_RATE, seed=42)",
+    "EPOCHS = 2",
+    "LEARNING_RATE = 1e-5",
+    # ZOE-m2: the pretrained head is restored before the baseline and before every fine-tune.
+    "pipe.model.metric_head.load_state_dict(PRETRAINED_HEAD)",
+    # ZOE-M2: the figure and the interpretation against the constant.
+    "evaluation_report_e2e['interpretation'] = interpretation",
+    "figure.save('outputs/zoedepth_metric_depth_heldout_example.png')",
+    # ZOE-m1 / ZOE-m3: BYOD by path, one upload, CUDA checked before the download.
+    "BYOD_ZIP_PATH = ''",
+    "if len(uploaded) != 1:",
+    "raise RuntimeError('This notebook needs an NVIDIA GPU exposed as CUDA",
     "target = _prepare_depth_target(",
     "adapted_eval = pipe.evaluate_adaptation(val_records)",
     "unseen = generated_depth_records(start=24, count=1)[0]",
@@ -67,6 +78,14 @@ MARKDOWN_MARKERS = (
     "SafeTensors",
     "fresh reload",
     "sample-sanity",
+    "**Read this sample for what it is: its depth layout is upside down.**",
+    "## How to use this notebook",
+    "<strong>Glossary</strong>",
+    "**Predict before running:**",
+    "<summary>Check your reasoning</summary>",
+    "## 12. Activity: change one thing — train longer",
+    "## Troubleshooting",
+    "## Conclusion (your notes)",
 )
 
 # Runtime/model-library access must stay inside the carried module (ST1/ST2).
@@ -85,10 +104,10 @@ FORBIDDEN_OUTSIDE_MODULE = (
 # ---------------------------------------------------------------------------
 # Shared checks. Everything below is source/structure validation only. Passing
 # these checks is NOT clean-runtime execution evidence under DIMER Notebook
-# Specification 2.0; see docs/release-verification.md for the release gate.
+# Specification 2.2; see docs/release-verification.md for the release gate.
 # ---------------------------------------------------------------------------
 
-NOTEBOOK_SPEC = "2.0"
+NOTEBOOK_SPEC = "2.2"
 ALLOWED_PROFILES = {"E2E", "ARTIFACT-INFERENCE", "TASK-INFERENCE", "MULTI-CAPABILITY", "SMOKE"}
 STATUS_TOKENS = ("Candidate", "Release-grade")
 PLACEHOLDER = re.compile(r"\b(TODO|TBD|FIXME)\b|Insert text here|Tooltip:", re.I)
@@ -125,10 +144,8 @@ REQUIRED_CARD_HEADINGS = [
 COMMON_CODE_MARKERS = (
     "PINS = [",
     "NOTEBOOK_SOURCE = {",
-    "SKIP_INSTALL = os.environ.get('DIMER_NOTEBOOK_CI_PREINSTALLED') == '1'",
-    "subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', *PINS], check=True)",
-    "importlib.metadata.packages_distributions()",
-    "importlib.invalidate_caches()",
+    "LOCK_TEXT = r'" + "''",
+    "_ip.input_transformers_cleanup.append(_route_to_isolated_runtime)",
     "platform.python_version()",
     "torch.__version__",
     "MANIFEST = {",
@@ -541,17 +558,17 @@ def _validate_parity(path: Path, notebook: dict, code_cells: list[tuple[int, str
 
 
 def _validate_bootstrap_guard(path: Path, code_cells: list[tuple[int, str, ast.Module]]) -> None:
-    """The stale-import guard must actually raise: `if stale:` whose body raises RuntimeError."""
-    raises = False
-    for _, _, tree in code_cells:
-        for node in ast.walk(tree):
-            if isinstance(node, ast.If) and isinstance(node.test, ast.Name) and node.test.id == "stale":
-                for sub in ast.walk(node):
-                    if isinstance(sub, ast.Raise) and isinstance(sub.exc, ast.Call):
-                        func = sub.exc.func
-                        if isinstance(func, ast.Name) and func.id == "RuntimeError":
-                            raises = True
-    _check(raises, f"{path.name}: install cell must raise RuntimeError when already-imported packages change")
+    """ZOE-M1 (RUN1, RUN10, ENV6): nothing is pip-installed into the kernel and no cell asks for a restart. Exactly two
+    kernel cells exist: the isolated install (pinned uv by digest, managed CPython, hash lock with --require-hashes
+    --only-binary :all:) and the router that sends every later cell to the isolated worker."""
+    kernel_raw = [source for _index, source, _tree in code_cells if "# dimer: kernel cell" in source]
+    _check(len(kernel_raw) == 2, f"{path.name}: exactly two kernel cells (isolated install and router) are expected (ZOE-M1)")
+    install = next((k for k in kernel_raw if "LOCK_TEXT = r" in k), "")
+    for needed in ('"--managed-python"', '"--require-hashes"', '"--only-binary"', '":all:"', "UV_SHA256", "LOCK_SHA256", 'platform.machine() != "x86_64"'):
+        _check(needed in install, f"{path.name}: the isolated install cell must use {needed} (ZOE-M1)")
+    every = "\n".join(source for _index, source, _tree in code_cells)
+    _check("Restart the runtime" not in every, f"{path.name}: no cell may ask for a runtime restart (ZOE-M1)")
+    _check("[sys.executable, '-m', 'pip'" not in every, f"{path.name}: nothing may be pip-installed into the kernel (ZOE-M1)")
 
 
 def _validate_notebook_content(

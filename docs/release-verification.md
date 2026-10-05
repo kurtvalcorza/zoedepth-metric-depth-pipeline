@@ -55,3 +55,18 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 ## Current status
 
 The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+
+## 2026-10-05 review fixes — verification pending
+
+The 2026-10-05 review (`docs/reviews/2026-10-05-notebook-review/zoedepth_metric_depth_colab_Review.md`) found two problems with how the recorded run is presented:
+- The "clean-runtime gate satisfied" statement rests on a run that restarted once after the in-kernel install cell, so it is not one-pass (REL2) evidence.
+- The default scenes are laid out upside down compared with photographs. This explains why the pretrained model loses to the constant on δ1 and why held-out AbsRel gets worse after the head-only fine-tune.
+
+The notebook was then regenerated (`zoedepth_metric_depth_colab_Fixes.md`):
+- An isolated, hash-locked `uv` environment replaces the in-kernel install (spec 2.2), and CUDA is checked in Section 1, before the checkpoint download.
+- The inverted layout is stated in Section 4 and shown as a figure, and Section 8 prints an interpretation against the constant. The generator and the recorded numbers are unchanged.
+- The guided layer was added.
+- BYOD gains a path field, a single-folder ZIP layout, a stated 8-pair minimum and a named sparse-depth refusal.
+- Sections 6–7 restore the pretrained head, so re-runs do not accumulate training.
+
+**No run of the regenerated blob is recorded.** The clean-runtime gate needs re-qualification with `restarted_after_install_cell: false`. The status wording above is left for the maintainer, who owns the release labels.

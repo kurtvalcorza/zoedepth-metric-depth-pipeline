@@ -2,11 +2,11 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kurtvalcorza/zoedepth-metric-depth-pipeline/blob/main/tutorials/zoedepth_metric_depth_colab.ipynb)
 
-Notebook specification: **DIMER Notebook Specification 2.0**. The notebook is a generated, standalone carrier: edit `tools/notebook_template.py` or the package and regenerate with `python tools/build_notebook.py`; do not hand-edit the `.ipynb`.
+Notebook specification: **DIMER Notebook Specification 2.2** (isolated `uv` environment, no runtime restart, since the 2026-10-05 review fixes). The notebook is a generated, standalone carrier: edit `tools/notebook_template.py` or the package and regenerate with `python tools/build_notebook.py`; do not hand-edit the `.ipynb`.
 
 | Notebook | Profile | Mode | Carrier | Default E2E path | Runtime | BYOD | Release status |
 |---|---|---|---|---|---|---|---|
-| `zoedepth_metric_depth_colab.ipynb` | `E2E` | `GUIDED` | standalone (generated) | 24 deterministic RGB/metric-depth scenes; 18/6 train/held-out split; pinned pretrained and constant-median baselines; two real gradient epochs on the metric head; held-out `abs_rel` and `delta1`; unseen-scene prediction; SafeTensors adapter export; fresh pinned-base reload equivalence | CUDA required; Colab T4 or Kaggle T4 supported | ZIP containing paired `images/` and `depth/*.npy` files, off by default | **Candidate** — corrected 11/11-cell exact-blob clean Kaggle T4 execution is recorded in `../docs/release-verification.md`; awaiting reviewer/integrator promotion |
+| `zoedepth_metric_depth_colab.ipynb` | `E2E` | `GUIDED` | standalone (generated) | 24 deterministic RGB/metric-depth scenes; 18/6 train/held-out split; pinned pretrained and constant-median baselines; two real gradient epochs on the metric head; held-out `abs_rel` and `delta1`; unseen-scene prediction; SafeTensors adapter export; fresh pinned-base reload equivalence | CUDA required (Section 1 stops on a CPU runtime); Colab T4 or Kaggle T4 supported; the only recorded hosted run is Kaggle T4, of the previous blob, with one restart | ZIP of 8–128 paired `images/` and `depth/*.npy` files (at the root or inside one folder; finite positive metres), by `BYOD_ZIP_PATH` or one upload; off by default; no BYOD run recorded | **Candidate** — corrected 11/11-cell exact-blob clean Kaggle T4 execution is recorded in `../docs/release-verification.md`; awaiting reviewer/integrator promotion |
 
 ## Conformance notes
 
