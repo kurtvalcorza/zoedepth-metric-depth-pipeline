@@ -59,7 +59,7 @@ No `pytorch_model.bin` exists upstream at this revision; SafeTensors is the only
 
 ## Release status
 
-**Candidate.** Exact carrier commit `ac175a5` and notebook blob `3d3254ea89e1` passed an 11/11-cell Kaggle T4 `Run all` of the default path (BYOD off) for the review-hardened adapter, after one manual restart following the old install cell; no BYOD run is recorded. The 2026-10-05 review fixes replaced that install with an isolated `uv` environment that needs no restart; the regenerated notebook has not been run yet. The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
+**Candidate.** Exact carrier commit `ac175a5` and notebook blob `3d3254ea89e1` passed an 11/11-cell Kaggle T4 `Run all` of the default path (BYOD off) for the review-hardened adapter, after one manual restart following the old install cell; no BYOD run is recorded. The 2026-10-05 review fixes replaced that install with an isolated `uv` environment that needs no restart; the regenerated blob `441111a9df11` (commit `13c283a`) completed one pass with no restart and 0 errors on a fresh Colab Tesla T4 on 2026-10-10 (Colab CLI 0.7.4 sequential execution, 13/13 code cells, 144.7 s; held-out AbsRel 0.431096 → 0.466203 and δ1 0.211222 → 0.212009, the same as the Kaggle v9 run; reload max difference 0.0). The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
 
 ## Documentation
 

@@ -1,0 +1,100 @@
+[colab] Parsing notebook '/home/kurt/colab-runs/zoedepth-metric-depth-pipeline-13c283a-490502/zoedepth_metric_depth_colab_13c283a_colab-cli-t4.ipynb'...
+[colab] Executing cell 1/13 - Infrastructure: install the locked runtime into an isolated environment...
+{'isolated_environment': '/content/dimer_isolated_env', 'isolated_python': '3.12.12', 'kernel_python': '3.13.15', 'locked_packages': 47, 'setup_seconds': 56}
+[colab] Executing cell 2/13 - Route the remaining cells to the isolated environment...
+Every later code cell now runs in /content/dimer_isolated_env/bin/python (pid 1090).
+[colab] Executing cell 3/13 - Infrastructure: record the pinned runtime and the notebook source...
+{'notebook_source': {'repository': 'zoedepth-metric-depth-pipeline', 'repository_revision': 'fe41b1d2cb19a6411c0250e79a76b6fd7a671c18', 'embedded_module': 'src/zoedepth_metric_depth_pipeline/pipeline.py', 'embedded_modules': ['src/zoedepth_metric_depth_pipeline/pipeline.py'], 'module_sha256': '1107ff98322c57e76c82ac41172059470ca36163f990de1a1ed0b455c1e07ba2', 'generator': 'build_notebook.py/2.1-swc-zoe', 'notebook_spec': '2.2'}, 'python': '3.12.12', 'torch': '2.14.0+cu130', 'transformers': '4.57.6', 'safetensors': '0.8.0', 'cuda': True}
+[colab] Executing cell 4/13 - zoedepth_metric_depth-12...
+[colab] Executing cell 5/13 - Infrastructure: pin, stage and verify the model...
+{'model_id': 'Intel/zoedepth-nyu-kitti', 'revision': 'f364d4c7936e91f465abba182208dd68142bf0ca', 'license': 'mit', 'files': 4, 'total_bytes': 1380379860}
+{'weights_dir': '/content/weights/zoedepth-nyu-kitti', 'fetched': ['README.md', 'config.json', 'model.safetensors', 'preprocessor_config.json']}
+{'verified_files': 4, 'revision': 'f364d4c7936e91f465abba182208dd68142bf0ca'}
+/content/dimer_isolated_env/lib/python3.12/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+{'device': 'cuda:0', 'source': 'local-snapshot'}
+[colab] Executing cell 6/13 - zoedepth_metric_depth-16...
+{'dataset_kind': 'generated', 'records': 24, 'train': 18, 'held_out': 6}
+[colab] Executing cell 7/13 - zoedepth_metric_depth-18...
+{
+  "kind": "generated",
+  "train": {
+    "records": 18,
+    "unique_ids": 18,
+    "valid_depth_pixels": 221184,
+    "depth_min_m": 0.8117600083351135,
+    "depth_max_m": 4.2755045890808105,
+    "depth_median_m": 2.298952102661133,
+    "dataset_sha256": "24eeffb1e5d1e5474ffc20d40d7f36d08acb6f523f8c9c1fab6c62dd88192ec6",
+    "verdict": "accepted"
+  },
+  "validation": {
+    "records": 6,
+    "unique_ids": 6,
+    "valid_depth_pixels": 73728,
+    "depth_min_m": 0.7304480671882629,
+    "depth_max_m": 4.37999963760376,
+    "depth_median_m": 2.1335408687591553,
+    "dataset_sha256": "7326c5cc0ac5b18892a241a6d5943251d8e9a84d97d953c7eec5188eaa3a07c3",
+    "verdict": "accepted"
+  },
+  "overlap_ids": []
+}
+[colab] Executing cell 8/13 - zoedepth_metric_depth-20...
+{
+  "records": 6,
+  "valid_pixels": 73728,
+  "abs_rel": 0.4310957682873357,
+  "delta1": 0.21122233072916666,
+  "constant_median_baseline_abs_rel": 0.45260539228211055,
+  "constant_median_baseline_delta1": 0.2577582465277778
+}
+[colab] Executing cell 9/13 - zoedepth_metric_depth-22...
+{'parameters': {'trainable_parameters': 1761754, 'frozen_parameters': 343311553}, 'history': [{'epoch': 1, 'train_log_l1': 0.422784, 'optimizer_steps': 18, 'val_log_l1': 0.428735}, {'epoch': 2, 'train_log_l1': 0.418089, 'optimizer_steps': 18, 'val_log_l1': 0.425855}], 'weight_delta_l2': 0.09880044227833128}
+[colab] Executing cell 10/13 - zoedepth_metric_depth-24...
+{
+  "task": "monocular-metric-depth-adaptation",
+  "verdict": "sample-sanity",
+  "estimation": "fixed generated held-out split",
+  "baseline_pretrained": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.4310957682873357,
+    "delta1": 0.21122233072916666,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778
+  },
+  "adapted": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.4662034091400176,
+    "delta1": 0.2120090060763889,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778,
+    "abs_rel_delta_vs_baseline": 0.01359801685790707,
+    "delta1_delta_vs_baseline": -0.045749240451388895
+  },
+  "weight_delta_l2": 0.09880044227833128,
+  "interpretation": {
+    "pretrained_beats_constant_abs_rel": true,
+    "pretrained_beats_constant_delta1": false,
+    "adapted_beats_constant_abs_rel": false,
+    "abs_rel_change_after_training": 0.0351,
+    "delta1_change_after_training": 0.0008,
+    "row_correlation_pretrained": -0.841,
+    "row_correlation_adapted": -0.842
+  }
+}
+The pretrained prediction slopes the opposite way to the reference: these scenes are nearest at the top, photographs at the bottom.
+Held-out AbsRel got worse after training: the frozen features still read the layout upside down, and the head can only rescale.
+panels, left to right: RGB | reference depth | pretrained prediction | adapted prediction
+<PIL.Image.Image image mode=RGB size=528x100 at 0x798B4024B9E0>
+
+[Image saved to: /tmp/tmpjy59n6rx.png]
+[colab] Executing cell 11/13 - zoedepth_metric_depth-26...
+{'id': 'generated-depth-24', 'abs_rel_sample_sanity': 0.43371198380934306, 'delta1_sample_sanity': 0.21500651041666666, 'depth_range_m': [1.9764130115509033, 2.361668109893799]}
+[colab] Executing cell 12/13 - zoedepth_metric_depth-28...
+{'verification': 'PASSED', 'rtol': 1e-05, 'atol': 1e-05, 'max_abs_diff': 0.0, 'artifact_dir': 'outputs/zoedepth-metric-head-adapter-v1'}
+[colab] Executing cell 13/13 - zoedepth_metric_depth-30...
+{'status': 'E2E COMPLETE (pipeline stages; read the Section 8 interpretation for what the numbers mean)', 'train_records': 18, 'held_out_records': 6, 'optimizer_steps': 36, 'weight_delta_l2': 0.09880044227833128, 'reload': 'PASSED', 'outputs': ['zoedepth-metric-head-adapter-v1', 'zoedepth_metric_depth_dataset_manifest.json', 'zoedepth_metric_depth_evaluation_report.json', 'zoedepth_metric_depth_heldout_example.png', 'zoedepth_metric_depth_result.json', 'zoedepth_metric_depth_unseen_depth.npy']}
+[colab] Saving notebook with outputs to '/home/kurt/colab-runs/zoedepth-metric-depth-pipeline-13c283a-490502/zoedepth_metric_depth_colab_13c283a_colab-cli-t4_output.ipynb'...
