@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `ac175a534c57a9d9ddd7dc4bad282bc99f56051c`, embedded source revision `f0cedd2892eebaf99e6b598aa60cecf669ba50f4`, and notebook blob `3d3254ea89e196d9f0bd484da8a59275ac5589e4` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the corrected execution-evidence gate but does not itself perform reviewer/integrator promotion.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `ac175a534c57a9d9ddd7dc4bad282bc99f56051c`, embedded source revision `f0cedd2892eebaf99e6b598aa60cecf669ba50f4`, and notebook blob `3d3254ea89e196d9f0bd484da8a59275ac5589e4` passed 11/11 cells on Kaggle T4 only after a manual restart following the old in-kernel install cell. That run is workflow history, not one-pass clean-runtime (REL2) evidence and not promotion evidence; the regenerated notebook (2026-10-05 review fixes, below) — blob `441111a9df11` (commit `13c283a`) completed one pass with no restart and 0 errors on a fresh Colab Tesla T4 on 2026-10-10 (Colab CLI 0.7.4 sequential execution, 13/13 code cells, 144.7 s; held-out AbsRel 0.431096 → 0.466203 and δ1 0.211222 → 0.212009, the same as the Kaggle v9 run; reload max difference 0.0) — is the current one-pass record; status stays Candidate.
 
 ## Automatic coverage
 
@@ -33,6 +33,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 | Date (UTC) | Commit / notebook blob | Executor | Path | Outcome |
 |---|---|---|---|---|
 | 2026-09-18 | `ac175a534c57a9d9ddd7dc4bad282bc99f56051c` / `3d3254ea89e196d9f0bd484da8a59275ac5589e4` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v9) | Default generated dataset | **PASS** — 11/11 cells after one expected install restart; 265.5 s; clean cache; 10 staged files / 1,380 MB; 36 optimizer steps; pixel-weighted held-out AbsRel 0.431096 → 0.466203 and delta1 0.211222 → 0.212009; reload max difference 0.0; workflow passed without a synthetic quality-improvement claim |
+| 2026-10-10 (09:43:18 UTC start) | `13c283a2397b0fd70d77c2003e6709e492c71848` / `441111a9df11057f25ec70de236f7d1e36ec4090` (`NOTEBOOK_SOURCE.repository_revision` `fe41b1d2cb19`, embedded `module_sha256` `1107ff98322c…`, generator `build_notebook.py/2.1-swc-zoe`, `notebook_spec` 2.2) | Colab CLI 0.7.4 sequential execution (`colab exec -f`, not a browser Run all; order from `exec.log`, no execution counts), fresh Colab Tesla T4 VM (session `suite-zoedepth-13c283a-4905`), committed blob fetched at the commit and checked before the VM was allocated; kernel Python 3.13.15, isolated CPython 3.12.12 (47 locked packages, setup 56 s), torch 2.14.0+cu130, transformers 4.57.6, safetensors 0.8.0, `cuda:0` | Default generated dataset, every form field at its default (`USE_BYOD = False`) | **PASS** — one pass, no restart, 0 errors; 13/13 code cells in order (cell 4, the carried pipeline module, prints nothing); 144.7 s wall; 4 snapshot files / 1,380,379,860 bytes digest-verified at `f364d4c7936e`; 18/6 split, no overlap; pretrained AbsRel 0.431096 / δ1 0.211222 vs constant-median 0.452605 / 0.257758; 1,761,754 trainable / 343,311,553 frozen; val log-L1 0.428735 → 0.425855; 36 optimizer steps; weight delta 0.098800; adapted AbsRel 0.466203 / δ1 0.212009; row correlation −0.841 / −0.842; unseen AbsRel 0.433712; reload `PASSED`, max difference 0.0. Held-out metrics and history equal the Kaggle v9 run. Evidence in `docs/execution-evidence/2026-10-10-13c283a/`: executed notebook SHA-256 `dc47d8675d95cc666cc3a19302d55388f95b0b749e59bb9107237148bc8391ba`, `run_summary.json` `583f5b990090cf7f16d567f25cb270dea95132d8c4543e88d61a58f4a51791ce`, `exec.log` `bdd5a9f61cac8a3886869c6e12a4ede4aad4c59181100b2f82fe64f4ce8b2a41`. Not exercised: BYOD, the Section 12 activity, a browser Run all, form re-runs |
 
 ### Local E2E pre-flight (not promotion evidence)
 
@@ -54,4 +55,19 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 ## Current status
 
-The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+The corrected E2E implementation and generated carrier remain **Candidate**; the v9 run below needed a manual restart (corrected 2026-10-10 per the 2026-10-05 review, ZOE-M1), so it is not one-pass evidence; the one-pass clean-runtime record is the 2026-10-10 Colab T4 run of blob `441111a9df11` (commit `13c283a`) in the table above, with no restart. Promotion remains a reviewer/integrator decision; no BYOD run is recorded. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+
+## 2026-10-05 review fixes — verification pending
+
+The 2026-10-05 review (`docs/reviews/2026-10-05-notebook-review/zoedepth_metric_depth_colab_Review.md`) found two problems with how the recorded run is presented:
+- The "clean-runtime gate satisfied" statement rests on a run that restarted once after the in-kernel install cell, so it is not one-pass (REL2) evidence.
+- The default scenes are laid out upside down compared with photographs. This explains why the pretrained model loses to the constant on δ1 and why held-out AbsRel gets worse after the head-only fine-tune.
+
+The notebook was then regenerated (`zoedepth_metric_depth_colab_Fixes.md`):
+- An isolated, hash-locked `uv` environment replaces the in-kernel install (spec 2.2), and CUDA is checked in Section 1, before the checkpoint download.
+- The inverted layout is stated in Section 4 and shown as a figure, and Section 8 prints an interpretation against the constant. The generator and the recorded numbers are unchanged.
+- The guided layer was added.
+- BYOD gains a path field, a single-folder ZIP layout, a stated 8-pair minimum and a named sparse-depth refusal.
+- Sections 6–7 restore the pretrained head, so re-runs do not accumulate training.
+
+**The regenerated blob `441111a9df11` (commit `13c283a`) ran once on a fresh Colab Tesla T4 on 2026-10-10 with no restart** (13/13 code cells, 0 errors, 144.7 s; see Recorded executions). Status stays Candidate until reviewer/integrator promotion.

@@ -1,6 +1,12 @@
 import builtins
+import importlib.util
 
 import pytest
+
+# test_adaptation.py imports torch at module level; without torch (a lightweight local run) it is
+# skipped at collection
+# instead of erroring. CI installs torch, so it always runs there.
+collect_ignore = [] if importlib.util.find_spec("torch") else ["test_adaptation.py"]
 
 
 @pytest.fixture
