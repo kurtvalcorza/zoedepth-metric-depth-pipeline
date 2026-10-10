@@ -1,6 +1,6 @@
 # Release verification
 
-`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `ac175a534c57a9d9ddd7dc4bad282bc99f56051c`, embedded source revision `f0cedd2892eebaf99e6b598aa60cecf669ba50f4`, and notebook blob `3d3254ea89e196d9f0bd484da8a59275ac5589e4` passed top-to-bottom in a clean supported Kaggle T4 runtime. This satisfies the corrected execution-evidence gate but does not itself perform reviewer/integrator promotion.
+`tutorials/zoedepth_metric_depth_colab.ipynb` is an `E2E`, standalone Candidate carrier under DIMER Notebook Specification 2.0. Exact carrier commit `ac175a534c57a9d9ddd7dc4bad282bc99f56051c`, embedded source revision `f0cedd2892eebaf99e6b598aa60cecf669ba50f4`, and notebook blob `3d3254ea89e196d9f0bd484da8a59275ac5589e4` passed 11/11 cells on Kaggle T4 only after a manual restart following the old in-kernel install cell. That run is workflow history, not one-pass clean-runtime (REL2) evidence and not promotion evidence; the regenerated notebook (2026-10-05 review fixes, below) needs a one-pass hosted run.
 
 ## Automatic coverage
 
@@ -54,7 +54,7 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 ## Current status
 
-The corrected E2E implementation and generated carrier remain **Candidate**, with the clean-runtime gate satisfied. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
+The corrected E2E implementation and generated carrier remain **Candidate**; the clean-runtime gate is **not** satisfied, because the v9 run below needed a manual restart (corrected 2026-10-10 per the 2026-10-05 review, ZOE-M1). The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
 
 ## 2026-10-05 review fixes — verification pending
 
@@ -69,4 +69,4 @@ The notebook was then regenerated (`zoedepth_metric_depth_colab_Fixes.md`):
 - BYOD gains a path field, a single-folder ZIP layout, a stated 8-pair minimum and a named sparse-depth refusal.
 - Sections 6–7 restore the pretrained head, so re-runs do not accumulate training.
 
-**No run of the regenerated blob is recorded.** The clean-runtime gate needs re-qualification with `restarted_after_install_cell: false`. The status wording above is left for the maintainer, who owns the release labels.
+**No run of the regenerated blob is recorded.** The clean-runtime gate needs re-qualification with `restarted_after_install_cell: false`. The status wording above was corrected on 2026-10-10 to match: Candidate, gate open.
