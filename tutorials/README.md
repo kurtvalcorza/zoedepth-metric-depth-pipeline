@@ -2,7 +2,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kurtvalcorza/zoedepth-metric-depth-pipeline/blob/main/tutorials/zoedepth_metric_depth_colab.ipynb)
 
-Notebook specification: **DIMER Notebook Specification 2.2** (isolated `uv` environment, no runtime restart, since the 2026-10-05 review fixes). The notebook is a generated, standalone carrier: edit `tools/notebook_template.py` or the package and regenerate with `python tools/build_notebook.py`; do not hand-edit the `.ipynb`.
+Notebook specification: **DIMER Notebook Specification 2.5** (isolated `uv` environment, no runtime restart, since the 2026-10-05 review fixes). The notebook is a generated, standalone carrier: edit `tools/notebook_template.py` or the package and regenerate with `python tools/build_notebook.py`; do not hand-edit the `.ipynb`.
 
 | Notebook | Profile | Mode | Carrier | Default E2E path | Runtime | BYOD | Release status |
 |---|---|---|---|---|---|---|---|
