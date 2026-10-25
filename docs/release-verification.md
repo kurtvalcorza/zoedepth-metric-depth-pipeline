@@ -55,6 +55,8 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 
 ## Current status
 
+**Pending (tier C review fixes, 2026-10-25):** `tutorials/zoedepth_metric_depth_colab.ipynb` blob `b0aa8183a8d95a24e24d0afd9828e0e7d5e9c245`, generated at `1d52e92` (T118-1..T118-4, T118-S). It changes markdown, the use notice, `metadata.dimer` and the `NOTEBOOK_SOURCE` record only. Status **Candidate**; its hosted Colab T4 run is pending, and the runs below describe earlier blobs (REL14).
+
 The corrected E2E implementation and generated carrier remain **Candidate**; the v9 run below needed a manual restart (corrected 2026-10-10 per the 2026-10-05 review, ZOE-M1), so it is not one-pass evidence; the one-pass clean-runtime record is the 2026-10-10 Colab T4 run of blob `441111a9df11` (commit `13c283a`) in the table above, with no restart. Promotion remains a reviewer/integrator decision; no BYOD run is recorded. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
 
 ## 2026-10-05 review fixes — verification pending
