@@ -1,4 +1,4 @@
-"""E2E notebook template for ZoeDepth metric-head adaptation (NOTEBOOK_SPEC 2.2 §4 standalone carrier)."""
+"""E2E notebook template for ZoeDepth metric-head adaptation (NOTEBOOK_SPEC 2.5 §4 standalone carrier)."""
 
 # ruff: noqa: E501
 
@@ -36,9 +36,8 @@ TEMPLATE = {
         "generates and validates paired RGB/depth records, freezes the backbone and decoder neck, fine-tunes the metric "
         "head, evaluates the held-out split against a training-median baseline, predicts a new image, exports a safe "
         "adapter, reloads it over a fresh base, verifies numeric equivalence, and writes provenance without a clone, "
-        "credential, upload, configuration edit or restart (NOTEBOOK_SPEC 2.2 §5). The one recorded hosted run (Kaggle T4, "
-        "18 September 2026) was of the previous notebook and needed a restart after its install cell; no run of this revision "
-        "is recorded yet."
+        "credential, upload, configuration edit or restart (NOTEBOOK_SPEC 2.5 §5). Hosted runs are recorded per notebook blob in `docs/release-verification.md`: the previous blob `441111a9` "
+        "completed one pass on a Colab T4 on 2026-10-10 (144.7 s), and the Kaggle T4 run of an earlier notebook (2026-09-18) needed a restart."
     ),
     "byod": (
         "Set `USE_BYOD = True` and either give a ZIP path in `BYOD_ZIP_PATH` or upload exactly one ZIP containing paired "
@@ -107,8 +106,8 @@ TEMPLATE = {
             "the evidence is produced and how to read it. **[Engineering]** — reproducibility, provenance and packaging.\n\n"
             "**Predict, then check.** Before each principal result a **Predict before running** prompt asks you to commit to an expectation; after "
             "it, **What to notice** describes normal output and a collapsed **Check your reasoning** block gives a worked answer. Write your own "
-            "answer first, then open it. The numbers the answers quote come from the recorded Kaggle T4 run of the previous version of this "
-            "notebook with the same defaults (18 September 2026); no run of this revision is recorded yet."
+            "answer first, then open it. The numbers the answers quote come from the Colab T4 run of blob `441111a9` (commit `13c283a`, 2026-10-10), "
+            "which printed the same metrics as the Kaggle T4 run of the previous version (18 September 2026); neither was re-run for this revision."
         ),
         (
             "## The task: Input → Model/System → Output\n\n"
@@ -154,8 +153,12 @@ TEMPLATE = {
         ),
     ],
     "prerequisites": [
-        "- **Runtime:** a fresh **Linux x86_64** runtime with an NVIDIA T4-class GPU or better (Colab or Kaggle T4). CUDA is required, and Section 1 stops on a CPU runtime before anything large is downloaded. The kernel's own Python version does not matter: Section 1 builds a separate environment with CPython 3.12.12 from the hash-locked pins and every later cell runs there. The pinned 1.38 GB checkpoint is acquired and digest-verified automatically. Timing: the previous version of this notebook ran in 88.1 s on a Kaggle T4 once installed (18 September 2026), after a first pass of 177.4 s that stopped for a restart in the old install cell; this version has not been timed yet.",
+        "- **Runtime:** a fresh **Linux x86_64** runtime with an NVIDIA T4-class GPU or better (Colab or Kaggle T4). CUDA is required, and Section 1 stops on a CPU runtime before anything large is downloaded. The kernel's own Python version does not matter: Section 1 builds a separate environment with CPython 3.12.12 from the hash-locked pins and every later cell runs there. The pinned 1.38 GB checkpoint is acquired and digest-verified automatically. Timing: the previous version of this notebook ran in 88.1 s on a Kaggle T4 once installed (18 September 2026), after a first pass of 177.4 s that stopped for a restart in the old install cell; the previous blob of this version took 144.7 s on a Colab T4 (2026-10-10).",
         "- **Knowledge:** Python, metric depth, train/validation separation, AbsRel, δ1, and adapter/base dependencies.",
+        "- **Overlap with the training data:** the ZoeDepth NYU+KITTI checkpoint was trained on NYU Depth v2 and KITTI after relative-depth "
+        "pretraining [1] (model card). The default scenes are generated in code when the notebook runs, so they cannot be in any training set "
+        "(verified by construction). A BYOD set of indoor or driving photographs could overlap NYU Depth v2 or KITTI, which would make the "
+        "pretrained baseline look better than it is.",
         "- **Data:** the default path generates 24 paired scenes. **Their depth layout is upside down compared with photographs** (near at the top, far at the bottom), which Section 4 explains and uses. Optional BYOD accepts a ZIP of 8–128 image/depth pairs: `images/<id>.png|jpg` and `depth/<id>.npy` (finite positive metres, same height and width as the image), at the archive root or inside one top-level folder, by `BYOD_ZIP_PATH` or one upload. Sparse sensor depth with zeros for missing returns is refused with a message saying so; fill or crop those pixels first. Do not upload confidential or restricted data unless you are authorized to use it in the hosted runtime.",
         "- **Credentials:** none. The pinned model is public.",
     ],
@@ -272,7 +275,7 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "**What to notice (Section 4):** 24 records, 18 train and 6 held out.\n\n<details><summary>Check your reasoning</summary>Towards the top. A model trained on photographs has learned that the bottom of a frame is usually nearest, so it predicts the opposite slope to these references. On the recorded unseen scene the reference row means run from 1.25 m (top) to 3.85 m (bottom) while the prediction runs from 2.29 m to 2.01 m. Section 8 shows this as a picture.</details>\n\n## 5. Validate alignment and split integrity · [Evaluation practice]\n\nThe validator checks unique IDs, image ceilings, exact depth/image shape, finite positive metres, the 80 m ceiling, and content fingerprints. Cross-split IDs are forbidden.",
+            "md": "**What to notice (Section 4):** 24 records, 18 train and 6 held out.\n\n<details><summary>Check your reasoning</summary>Towards the top. A model trained on photographs has learned that the bottom of a frame is usually nearest, so it predicts the opposite slope to these references. In the Colab T4 run of blob `441111a9` (commit `13c283a`, 2026-10-10) Section 8 printed `row_correlation_pretrained` −0.841: the prediction's rows run against the reference's. Section 8 shows this as a picture.</details>\n\n## 5. Validate alignment and split integrity · [Evaluation practice]\n\nThe validator checks unique IDs, image ceilings, exact depth/image shape, finite positive metres, the 80 m ceiling, and content fingerprints. Cross-split IDs are forbidden.",
             "code": (
                 "import json\n"
                 "import os\n\n"
@@ -289,7 +292,7 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "## 6. Measure the pretrained baseline · [Evaluation practice]\n\nScore the untouched holdout with AbsRel and δ1. The trivial comparator predicts the training split's median depth at every pixel. The cell also keeps a copy of the pretrained metric head (`PRETRAINED_HEAD`), taken the first time it runs, and restores it before scoring, so the baseline is always the pretrained model's even if you re-run this cell after Section 7.\n\n**Predict before running:** will the pretrained model beat the constant on AbsRel? On δ1?",
+            "md": "## 6. Measure the pretrained baseline · [Evaluation practice]\n\nScore the untouched holdout with AbsRel and δ1. The six held-out scenes come from the same generator as the training scenes, with only the sine phase and panel offsets changed, so they are near-copies: this is a sample-sanity check of the pipeline, not an independent test. The trivial comparator predicts the training split's median depth at every pixel. The cell also keeps a copy of the pretrained metric head (`PRETRAINED_HEAD`), taken the first time it runs, and restores it before scoring, so the baseline is always the pretrained model's even if you re-run this cell after Section 7.\n\n**Predict before running:** will the pretrained model beat the constant on AbsRel? On δ1?",
             "code": (
                 "def score_records(model_pipe, records, median_depth):\n"
                 "    model_abs_sum = base_abs_sum = 0.0\n"
@@ -320,7 +323,7 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "**What to notice (Section 6):** the model's AbsRel and δ1 beside the constant's.\n\n<details><summary>Check your reasoning</summary>Barely, and no. The recorded run measured AbsRel 0.431 for the model against 0.453 for the constant, but δ1 0.211 against 0.258: a single number repeated at every pixel puts more pixels within 25 % of the truth than the pretrained model does. That is the inverted layout at work (Section 4), not a weak model.</details>\n\n## 7. Freeze the base and run bounded metric-head fine-tuning · [Concept]\n\nOnly `metric_head.*` is trainable. AdamW runs two epochs at batch size one with mean absolute log-depth error. The run must produce a non-zero weight delta. The cell first restores the pretrained head (`PRETRAINED_HEAD`), so re-running it after changing `EPOCHS` or `LEARNING_RATE` trains once from the pretrained model, never on top of an earlier run. The backbone and neck stay frozen, so the fine-tune can rescale depth but cannot change *where* the frozen features put near and far.\n\n**Predict before running:** the validation loss will fall a little. Will held-out AbsRel fall with it?",
+            "md": "**What to notice (Section 6):** the model's AbsRel and δ1 beside the constant's.\n\n<details><summary>Check your reasoning</summary>Barely, and no. The Colab T4 run of blob `441111a9` (commit `13c283a`, 2026-10-10) measured AbsRel 0.431 for the model against 0.453 for the constant, but δ1 0.211 against 0.258: a single number repeated at every pixel puts more pixels within 25 % of the truth than the pretrained model does. That is the inverted layout at work (Section 4), not a weak model.</details>\n\n## 7. Freeze the base and run bounded metric-head fine-tuning · [Concept]\n\nOnly `metric_head.*` is trainable. AdamW runs two epochs at batch size one with mean absolute log-depth error. The run must produce a non-zero weight delta. The cell first restores the pretrained head (`PRETRAINED_HEAD`), so re-running it after changing `EPOCHS` or `LEARNING_RATE` trains once from the pretrained model, never on top of an earlier run. The backbone and neck stay frozen, so the fine-tune can rescale depth but cannot change *where* the frozen features put near and far.\n\n**Predict before running:** the validation loss will fall a little. Will held-out AbsRel fall with it?",
             "code": (
                 "EPOCHS = 2  # @param {{type:\"integer\"}}\n"
                 "LEARNING_RATE = 1e-5  # @param {{type:\"number\"}}\n\n"
@@ -333,7 +336,7 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "**What to notice (Section 7):** the parameter counts (1.76 M trainable of 345 M), two history rows and a small `weight_delta_l2`.\n\n<details><summary>Check your reasoning</summary>No. In the recorded run the validation log-L1 fell from 0.433 to 0.426, while held-out AbsRel rose from 0.431 to 0.466 — worse than the constant's 0.453 — and δ1 stayed flat (0.211 → 0.212). The loss is a log-scale average that the head can lower by shifting the overall scale; AbsRel weighs near pixels heavily, and with the frozen features still reading the scenes upside down, rescaling helps the loss but hurts AbsRel. A falling training or validation loss is optimisation evidence, not task evidence.</details>\n\n## 8. Evaluate the adapted model, and look at one scene · [Evaluation practice]\n\nEvaluate the same untouched holdout against the training-median baseline. Lower AbsRel and higher δ1 are better, but generated-scene values remain sample-sanity. The cell then draws the first held-out scene as four panels — RGB, reference depth, pretrained prediction, adapted prediction (dark = near, light = far, one shared scale) — and prints an interpretation: model against constant before and after training, and whether the predicted depth increases down the image like the reference (`row_correlation`, from −1 to +1).",
+            "md": "**What to notice (Section 7):** the parameter counts (1.76 M trainable of 345 M), two history rows and a small `weight_delta_l2`.\n\n<details><summary>Check your reasoning</summary>No. In the Colab T4 run of blob `441111a9` (commit `13c283a`, 2026-10-10) the validation log-L1 went from 0.4287 after epoch 1 to 0.4259 after epoch 2 (no pre-training validation loss is printed), while held-out AbsRel rose from 0.431 to 0.466 — worse than the constant's 0.453 — and δ1 stayed flat (0.211 → 0.212). The loss is a log-scale average that the head can lower by shifting the overall scale; AbsRel weighs near pixels heavily, and with the frozen features still reading the scenes upside down, rescaling helps the loss but hurts AbsRel. A falling training or validation loss is optimisation evidence, not task evidence.</details>\n\n## 8. Evaluate the adapted model, and look at one scene · [Evaluation practice]\n\nEvaluate the same untouched holdout against the training-median baseline. Lower AbsRel and higher δ1 are better, but generated-scene values remain sample-sanity. The cell then draws the first held-out scene as four panels — RGB, reference depth, pretrained prediction, adapted prediction (dark = near, light = far, one shared scale) — and prints an interpretation: model against constant before and after training, and whether the predicted depth increases down the image like the reference (`row_correlation`, from −1 to +1).",
             "code": (
                 "adapted_eval = pipe.evaluate_adaptation(val_records)\n"
                 "evaluation_report_e2e = {{'task': 'monocular-metric-depth-adaptation', 'verdict': 'sample-sanity', 'estimation': f'fixed {{dataset_kind}} held-out split', 'baseline_pretrained': base_eval, 'adapted': adapted_eval, 'weight_delta_l2': pipe.adaptation_config['weight_delta_l2']}}\n"
@@ -373,7 +376,7 @@ TEMPLATE = {
             ),
         },
         {
-            "md": "**What to notice (Section 8):** the interpretation block and the four panels.\n\n<details><summary>Check your reasoning</summary>In the reference panel the bottom is light (far); in both prediction panels the light band sits higher and the range is narrow (the recorded unseen prediction spans only 1.98–2.36 m against a 0.72–4.38 m reference), and `row_correlation_pretrained` is negative. Training changed the scale a little, not the slope. So the honest reading of this run is: the plumbing works, the pretrained model cannot read upside-down scenes, and two epochs on the head cannot fix that. On data laid out like photographs — or your own RGB-D data — the same cells measure a real adaptation.</details>\n\n## 9. Infer on an unseen generated image · [Concept]\n\nA newly generated record outside the train/validation index range exercises adapted serving and produces a metric-depth array.",
+            "md": "**What to notice (Section 8):** the interpretation block and the four panels.\n\n<details><summary>Check your reasoning</summary>In the reference panel the bottom is light (far); in both prediction panels the light band sits higher and the range is narrow (the recorded unseen prediction spans only 1.98–2.36 m, `depth_range_m`, while the generated reference depths span about 0.73–4.38 m, the `depth_min_m` / `depth_max_m` Section 4 prints), and `row_correlation_pretrained` is negative. Training changed the scale a little, not the slope. So the honest reading of this run is: the plumbing works, the pretrained model cannot read upside-down scenes, and two epochs on the head cannot fix that. On data laid out like photographs — or your own RGB-D data — the same cells measure a real adaptation.</details>\n\n## 9. Infer on an unseen generated image · [Concept]\n\nA newly generated record outside the train/validation index range exercises adapted serving and produces a metric-depth array.",
             "code": (
                 "unseen = generated_depth_records(start=24, count=1)[0]\n"
                 "unseen_result = pipe.predict(unseen['image'])\n"
@@ -435,6 +438,7 @@ TEMPLATE = {
         "| Symptom | Likely cause | What to do |\n"
         "|---|---|---|\n"
         "| Section 1 stops with `This notebook needs an NVIDIA GPU exposed as CUDA` | a CPU runtime | Choose *Runtime → Change runtime type → T4 GPU* and *Runtime → Run all*. |\n"
+        "| You want the isolated environment somewhere other than `dimer_isolated_env/` | Section 1 builds it in the working directory by default | Set the environment variable `DIMER_ISOLATED_ENV` to a path before running Section 1. |\n"
         "| Section 1 stops with `This notebook needs a Linux x86_64 runtime` | a local Windows or macOS kernel, or an ARM machine | Use Google Colab or Kaggle; the lock holds manylinux x86_64 wheels. |\n"
         "| Section 1 fails while downloading, or `The pinned uv wheel failed its size/SHA-256 check` | a network failure, or an altered download | Run the install cell again; a repeated mismatch means the download is being altered — never edit the digest. |\n"
         "| `The isolated environment's Python process exited` | the worker ran out of memory | Restart the session and choose *Runtime → Run all*. |\n"
@@ -452,9 +456,8 @@ TEMPLATE = {
         "4. With `EPOCHS = 6` (Section 12), ___.\n"
         "5. What I would need before trusting an adapted depth model on my own camera: ___.\n\n"
         "## References\n\n"
-        "- Repository: https://github.com/kurtvalcorza/zoedepth-metric-depth-pipeline\n"
-        "- Repository model card: https://github.com/kurtvalcorza/zoedepth-metric-depth-pipeline/blob/main/MODEL_CARD.md\n"
-        "- Upstream model: https://huggingface.co/{MODEL_ID}\n"
-        "- ZoeDepth paper: https://arxiv.org/abs/2302.12288"
+        "[1] S. F. Bhat, R. Birkl, D. Wofk, P. Wonka, and M. Müller, \"ZoeDepth: Zero-shot transfer by combining relative and metric depth,\" arXiv:2302.12288, 2023. [Online]. Available: https://arxiv.org/abs/2302.12288\n\n"
+        "[2] Upstream model checkpoint. [Online]. Available: https://huggingface.co/{MODEL_ID}\n\n"
+        "[3] K. Valcorza, \"zoedepth-metric-depth-pipeline,\" source repository; model card: https://github.com/kurtvalcorza/zoedepth-metric-depth-pipeline/blob/main/MODEL_CARD.md. [Online]. Available: https://github.com/kurtvalcorza/zoedepth-metric-depth-pipeline"
     ),
 }
