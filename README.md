@@ -61,6 +61,8 @@ No `pytorch_model.bin` exists upstream at this revision; SafeTensors is the only
 
 **Candidate.** Exact carrier commit `ac175a5` and notebook blob `3d3254ea89e1` passed an 11/11-cell Kaggle T4 `Run all` of the default path (BYOD off) for the review-hardened adapter, after one manual restart following the old install cell; no BYOD run is recorded. The 2026-10-05 review fixes replaced that install with an isolated `uv` environment that needs no restart; the regenerated blob `441111a9df11` (commit `13c283a`) completed one pass with no restart and 0 errors on a fresh Colab Tesla T4 on 2026-10-10 (Colab CLI 0.7.4 sequential execution, 13/13 code cells, 144.7 s; held-out AbsRel 0.431096 → 0.466203 and δ1 0.211222 → 0.212009, the same as the Kaggle v9 run; reload max difference 0.0). The clean-runtime gate is recorded in `docs/release-verification.md`; status remains Candidate until reviewer/integrator promotion.
 
+The current blob `444f0542` (code commit `a745e98`) shows a refused BYOD input as one `Refused: <file>: <reason>` line with no traceback, removes the earlier run's results and `outputs/` files and stops Run all at that cell, while genuine failures keep their traceback (NOTEBOOK_SPEC DAT19/DAT20); its hosted Colab T4 runs (the default path and a scripted refusal, `USE_BYOD=True;BYOD_ZIP_PATH='/etc/hostname'`) are pending, and the hosted runs of earlier blobs, including `b0aa8183a8d9`, are history for it (REL14).
+
 ## Documentation
 
 - `MODEL_CARD.md` — MODEL_CARD_SPEC 1.1 card, provenance digests, input/output contract, measured runtime.
