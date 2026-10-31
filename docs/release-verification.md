@@ -54,9 +54,78 @@ A failed default path, missing gradient update, altered split, unsafe artifact, 
 | 2026-09-18 | `cd2abb1e780e7707210b33dc2d5369157a4060db` / `6afc6e78ca16fa49803e8cc37e83a26e19759dce` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v7) | Superseded E2E carrier | Passed 11/11 cells and reload, but final review found manifest-size, evidence-index, variability-guidance, and BYOD-report provenance gaps; retained as workflow history only |
 | 2026-09-18 | `8db7fe8d8f955d370291a1aa568a92de167e1b6c` / `e9f6ab0fe13622dd9ea3ad58a110d36ede7a2d6c` | Kaggle T4 (`kurtvalcorza/dimer-nb2-zoedepth-metric-depth` v8) | Superseded E2E carrier | Passed 11/11 cells and reload, but final review found adaptation-wide and BYOD cumulative resource ceilings plus stale model-card evidence; retained as workflow history only |
 
+### Hosted Colab T4 runs of blob `444f0542` (2026-10-29)
+
+These runs executed the PR head `e51670b61c40c512e4bc06f9c56d594e6584ae9f`, notebook `tutorials/zoedepth_metric_depth_colab.ipynb` blob `444f0542b88a55c7d7c96ce7ae2d423e7f3e86e1`, fetched at the 40-character SHA and Git-blob verified, with the Colab CLI (`colab exec -f`) on a fresh Colab Tesla T4 session (not a browser `Run all`). Each `run_summary.json` records `verdict` `PASS`, `exec_exit_code` 0, `input_unchanged` true and `stop_verified` true (the VM was released), and the SHA-256 of each executed notebook equals the summary's `executed_sha256`.
+
+**Default path (2026-10-29 14:52:10 UTC start).** Default settings, no overrides; session `suite-zoedepth-e51670b-4905`; wall 149.3 s (`wall_s`); `code_cells` 13, `executed_cells` 12, 0 errors. Retained evidence: [`docs/execution-evidence/2026-10-29-e51670b/`](execution-evidence/2026-10-29-e51670b/).
+
+Printed by the default run (verbatim lines from the executed outputs):
+
+```text
+{'verified_files': 4, 'revision': 'f364d4c7936e91f465abba182208dd68142bf0ca'}
+  "baseline_pretrained": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.4310957682873357,
+    "delta1": 0.21122233072916666,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778
+  },
+  "verdict": "sample-sanity",
+  "adapted": {
+    "records": 6,
+    "valid_pixels": 73728,
+    "abs_rel": 0.46620341110134805,
+    "delta1": 0.2120090060763889,
+    "constant_median_baseline_abs_rel": 0.45260539228211055,
+    "constant_median_baseline_delta1": 0.2577582465277778,
+    "abs_rel_delta_vs_baseline": 0.0135980188192375,
+    "delta1_delta_vs_baseline": -0.045749240451388895
+  },
+  "interpretation": {
+    "pretrained_beats_constant_abs_rel": true,
+    "pretrained_beats_constant_delta1": false,
+    "adapted_beats_constant_abs_rel": false,
+    "abs_rel_change_after_training": 0.0351,
+    "delta1_change_after_training": 0.0008,
+    "row_correlation_pretrained": -0.841,
+    "row_correlation_adapted": -0.842
+  }
+Held-out AbsRel got worse after training: the frozen features still read the layout upside down, and the head can only rescale.
+{'verification': 'PASSED', 'rtol': 1e-05, 'atol': 1e-05, 'max_abs_diff': 0.0, 'artifact_dir': 'outputs/zoedepth-metric-head-adapter-v1'}
+```
+
+**DAT20 refusal record (2026-10-29, blob `444f0542`).** Overrides, set by `--set` on a copy of the blob: `USE_BYOD` `False` → `True` and `BYOD_ZIP_PATH` `''` → `'/etc/hostname'` (the run copy differs from the blob in exactly those 2 source lines). The suite cut the run copy right after the refusing cell `zoedepth_metric_depth-16`, dropping 15 cells (7 of them code cells), which reproduces `Run all` stopping at the first error; the cut copy is `run_copy.ipynb`, SHA-256 `7ff85fa9a526ea599bec0a660557eda70a4c5620036a49f35de0422ecb241e6a` (Git blob `d31cbad6`), equal to the summary's `run_copy_sha256`. The cut copy's earlier code cells completed without an error output; the refusing cell's only error output has `ename` `IsolatedCellRefusal` and no traceback, and its output holds exactly one `Refused:` line:
+
+```text
+Refused: hostname: File is not a zip file; fix the input and run this cell again (the earlier results of this session and their outputs/ files were removed).
+```
+
+This run says nothing about the 15 cut cells, which did not run in it. Session `suite-zoedepth-e51670b-4905`, wall 117.3 s. Retained evidence: [`docs/execution-evidence/2026-10-29-e51670b-refusal/`](execution-evidence/2026-10-29-e51670b-refusal/).
+
+**Local-path redaction.** Local paths were replaced byte-wise by `<local-run-dir>` (and the Colab CLI install path by `<colab-cli-tool-dir>/`) before the first commit; each executed notebook and run copy was checked against its `run_summary.json` before any edit.
+
+| File (under `docs/execution-evidence/2026-10-29-e51670b/`) | Captured SHA-256 | Committed SHA-256 |
+|---|---|---|
+| `zoedepth_metric_depth_colab_e51670b_colab-cli-t4_default.ipynb` | `10f3de4eae27de2ae6d13cbbfa0364cf714a2460dd16aab424afd6e376fcfc69` | `10f3de4eae27de2ae6d13cbbfa0364cf714a2460dd16aab424afd6e376fcfc69` (unchanged, no local path) |
+| `exec.log` | `2a739e1978c7c38d47badd500875df9e90519687ed7c109bcd2d9b5bdac2a24e` | `fdd2f286c26677f6fa5836ac4bbe23e64eb7bf3023d90005cb7c64a04d446fb0` (2 local-path replacements) |
+| `run_summary.json` | `d181f0894d212290214c5a6639ea53c2caea47968b6e424bcab152088646767d` | `d181f0894d212290214c5a6639ea53c2caea47968b6e424bcab152088646767d` (unchanged, no local path) |
+
+| File (under `docs/execution-evidence/2026-10-29-e51670b-refusal/`) | Captured SHA-256 | Committed SHA-256 |
+|---|---|---|
+| `zoedepth_metric_depth_colab_e51670b_colab-cli-t4_refusal.ipynb` | `62815793c0d317535e7a3ddc361da9fd37c6617c50b6797473f32e3fae0459b8` | `62815793c0d317535e7a3ddc361da9fd37c6617c50b6797473f32e3fae0459b8` (unchanged, no local path) |
+| `exec.log` | `21f7fa91e2fec7c44f0f8596d5f2a1f6faf35fc23ab3ab75a0a0ef93428955df` | `95b3129855ad012e057b4206d7a4adbc2140cdeb1f77f18f76769040eeccf813` (2 local-path replacements) |
+| `run_summary.json` | `dae6e50d57f9de8cb8d23a2c8d1e0cb59425293276feefe7b807e3fb51ac9d37` | `dae6e50d57f9de8cb8d23a2c8d1e0cb59425293276feefe7b807e3fb51ac9d37` (unchanged, no local path) |
+| `run_copy.ipynb` | `7ff85fa9a526ea599bec0a660557eda70a4c5620036a49f35de0422ecb241e6a` | `7ff85fa9a526ea599bec0a660557eda70a4c5620036a49f35de0422ecb241e6a` (unchanged, no local path) |
+
+Not exercised by these runs: an accepted BYOD input (REL12) and a browser `Run all` of the interactive journeys (REL2).
+
 ## Current status
 
 **Current status (2026-10-25): Candidate.** `tutorials/zoedepth_metric_depth_colab.ipynb` blob `b0aa8183a8d95a24e24d0afd9828e0e7d5e9c245` (PR #8 head `63ee8cc`, tier C review fixes: markdown, the use notice, `metadata.dimer` and the `NOTEBOOK_SOURCE` record only) passed a Colab CLI sequential execution on a fresh Colab Tesla T4 at `63ee8cc` on 2026-10-25 (13/13 code cells, one pass, no restart, 0 errors, 136.1 s; see the 2026-10-25 row under "Recorded executions"; evidence in `docs/execution-evidence/2026-10-25-63ee8cc/`). This covers the **default path** only. Remaining gates: REL12 (a BYOD run, one input accepted and one refused) and REL2 (a browser run of the interactive journeys). Under REL14 the runs of earlier blobs recorded here are history for those blobs.
+
+The current blob `444f0542` (code commit `a745e98`) shows a refused BYOD input as one `Refused: <file>: <reason>` line with no traceback, removes the earlier run's results and `outputs/` files and stops Run all at that cell, while genuine failures keep their traceback (NOTEBOOK_SPEC DAT19/DAT20); on 2026-10-29 its default path (13 code cells, exit 0, 0 errors) and its scripted DAT20 refusal (`USE_BYOD=True;BYOD_ZIP_PATH=/etc/hostname`: exactly one `Refused:` line at cell `zoedepth_metric_depth-16`, no traceback, earlier cells clean, VM released) both passed on a hosted Colab Tesla T4 (Colab CLI `colab exec -f`, not a browser `Run all`). The remaining gates are REL12 (a hosted BYOD run with an accepted input) and REL2 (a browser run of the interactive journeys); earlier blobs' runs are history (REL14).
 
 The corrected E2E implementation and generated carrier remain **Candidate**; the v9 run below needed a manual restart (corrected 2026-10-10 per the 2026-10-05 review, ZOE-M1), so it is not one-pass evidence; the one-pass clean-runtime record is the 2026-10-10 Colab T4 run of blob `441111a9df11` (commit `13c283a`) in the table above, with no restart. Promotion remains a reviewer/integrator decision; no BYOD run is recorded. The serial executor verified the Git blob, began with a clean Hugging Face cache, installed the declared pins, restarted once as designed after dependency replacement, downloaded and digest-verified the pinned base snapshot, completed all 11 code cells, and preserved the v9 output hashes under `docs/verification/2026-09-18-kaggle-t4/`. The synthetic held-out scores do not demonstrate a quality improvement, so the run qualifies the workflow only; promotion remains a separate reviewer/integrator decision.
 

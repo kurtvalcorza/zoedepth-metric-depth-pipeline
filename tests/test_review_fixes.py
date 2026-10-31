@@ -234,7 +234,7 @@ def test_zoe_m1_cancelled_or_multi_file_upload_stops_with_the_rule(notebook: dic
     google.colab = colab
     for name, module in (("google", google), ("google.colab", colab), ("google.colab.files", files)):
         monkeypatch.setitem(sys.modules, name, module)
-    with pytest.raises(RuntimeError, match=rf"Upload exactly one ZIP \(received {len(uploads)}\)"):
+    with pytest.raises(ValueError, match=rf"Upload exactly one ZIP \(received {len(uploads)}\)"):  # a BYODRefusal since DAT20
         _section4(notebook, ns, **{"USE_BYOD = False": "USE_BYOD = True"})
 
 

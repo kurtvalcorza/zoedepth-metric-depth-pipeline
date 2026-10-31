@@ -1,0 +1,70 @@
+{
+  "repo": "zoedepth-metric-depth-pipeline",
+  "sha": "e51670b61c40c512e4bc06f9c56d594e6584ae9f",
+  "notebook": "tutorials/zoedepth_metric_depth_colab.ipynb",
+  "blob": "444f0542b88a55c7d7c96ce7ae2d423e7f3e86e1",
+  "gpu": "T4",
+  "session": "suite-zoedepth-e51670b-4905",
+  "started_utc": "2026-10-29T14:55:13+00:00",
+  "runner": "Colab CLI `colab exec -f` on a fresh session (not a browser Run all)",
+  "overrides": [
+    {
+      "name": "USE_BYOD",
+      "from": "False",
+      "to": "True"
+    },
+    {
+      "name": "BYOD_ZIP_PATH",
+      "from": "''",
+      "to": "'/etc/hostname'"
+    }
+  ],
+  "run_copy_blob": "d31cbad66c6800a334f6e89c6f03777031fd3629",
+  "run_copy_sha256": "7ff85fa9a526ea599bec0a660557eda70a4c5620036a49f35de0422ecb241e6a",
+  "run_copy_note": "refusal run: the run copy is the committed notebook with the listed assignment overrides, cut immediately after the refusal cell and re-serialised (nbformat layout); input_unchanged compares against that copy",
+  "truncated_after_cell": "zoedepth_metric_depth-16",
+  "refusal_cell_ref": "zoedepth_metric_depth-16",
+  "refusal_cell_index": 6,
+  "cells_dropped": 15,
+  "code_cells_dropped": 7,
+  "original_sha256": "ccbb68906f036adf75791d7aa21d09b47253adfc47679255fecbfe1a5a820eb9",
+  "status": "[suite-zoedepth-e51670b-4905] gpu-t4-s-usw1b0-rp3wirauqr10 | Hardware: T4 | Shape: Standard | Variant: GPU | Status: IDLE",
+  "exec_exit_code": 0,
+  "stopped": true,
+  "stop_verified": true,
+  "wall_s": 117.3,
+  "input_unchanged": true,
+  "executed_file": "zoedepth_metric_depth_colab_e51670b_colab-cli-t4_output.ipynb",
+  "log_cells": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "log_total": 6,
+  "code_cells": 6,
+  "executed_cells": 5,
+  "errors": [
+    {
+      "cell": "zoedepth_metric_depth-16",
+      "ename": "IsolatedCellRefusal",
+      "evalue": "hostname: File is not a zip file; fix the input and run this cell again (the earlier results of this session and their outputs/ files were removed)."
+    }
+  ],
+  "execution_counts": [],
+  "sequential": null,
+  "executed_sha256": "62815793c0d317535e7a3ddc361da9fd37c6617c50b6797473f32e3fae0459b8",
+  "log_sequential_complete": true,
+  "mode": "expect_refusal",
+  "refusal_line": "Refused: hostname: File is not a zip file; fix the input and run this cell again (the earlier results of this session and their outputs/ files were removed).",
+  "halting_cell_index": 6,
+  "halting_cell_id": "zoedepth_metric_depth-16",
+  "error_cells": [
+    6
+  ],
+  "refusal_fail_reasons": [],
+  "refusal_ok": true,
+  "verdict": "PASS"
+}
